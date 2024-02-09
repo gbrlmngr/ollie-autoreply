@@ -1,6 +1,6 @@
 import { Events } from 'discord.js';
 
-import { DiscordClient } from '$clients';
+import { DiscordClient } from '../clients';
 import { Listener } from './listener.interface';
 
 export default class ClientReadyListener
