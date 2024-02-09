@@ -4,7 +4,7 @@ import { type PrettyOptions } from 'pino-pretty';
 
 @injectable()
 export class LoggingService {
-  private context: object = null;
+  private context: object = {};
   private readonly logger = pino({
     transport: {
       target: 'pino-pretty',
@@ -15,7 +15,7 @@ export class LoggingService {
   });
 
   public withContext(context: object) {
-    this.context = context ?? null;
+    this.context = context ?? {};
     return this;
   }
 
