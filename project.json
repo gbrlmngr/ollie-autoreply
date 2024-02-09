@@ -6,12 +6,16 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
-        "outputPath": "dist/ollie-autoreply",
+        "outputPath": "dist/",
         "main": "./src/index.ts",
         "tsConfig": "./tsconfig.lib.json",
-        "assets": ["*.md"]
+        "assets": [
+          "*.md"
+        ]
       }
     },
     "lint": {
@@ -19,10 +23,21 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": [
+        "{options.reportsDirectory}"
+      ],
       "options": {
-        "reportsDirectory": "coverage/ollie-autoreply"
+        "reportsDirectory": "coverage/"
       }
+    },
+    "start:dev": {
+      "command": "nodemon ./src/main.ts"
+    },
+    "start": {
+      "dependsOn": [
+        "build"
+      ],
+      "command": "NODE_ENV=production node ./dist/src/main.js"
     }
   },
   "tags": []
