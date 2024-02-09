@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import { inject, injectable, decorate } from 'inversify';
 import Redis from 'ioredis';
 
@@ -6,6 +7,7 @@ import { LoggingService } from '../../services';
 import { ExpiredKeyEvent } from './redis.interfaces';
 
 decorate(injectable(), Redis);
+decorate(injectable(), EventEmitter);
 
 @injectable()
 export class RedisClient extends Redis {

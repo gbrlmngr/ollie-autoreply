@@ -5,6 +5,7 @@ import { Client, type ClientEvents } from 'discord.js';
 
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
+import { RedisClient } from '../redis';
 
 decorate(injectable(), Client);
 
@@ -13,7 +14,8 @@ export class DiscordClient<
   Ready extends boolean = boolean
 > extends Client<Ready> {
   public constructor(
-    @inject(LoggingService) public readonly loggingService: LoggingService
+    @inject(LoggingService) public readonly loggingService: LoggingService,
+    @inject(RedisClient) public readonly redisClient: RedisClient
   ) {
     super({
       intents: [],
