@@ -13,4 +13,8 @@ async function main() {
   DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);
 }
 
-main();
+main().catch((error) => {
+  console.error(`🔴 Fatal error during start-up. Aborting...`);
+  console.debug(error);
+  process.exit(1);
+});

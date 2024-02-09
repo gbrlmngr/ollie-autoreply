@@ -25,7 +25,7 @@
       }
     },
     "start:dev": {
-      "command": "env-cmd -f .env.development.local env-cmd -f .env.development nodemon ./src/main.ts"
+      "command": "env-cmd -f .env.development.local nodemon ./src/main.ts"
     },
     "start": {
       "dependsOn": ["build"],
