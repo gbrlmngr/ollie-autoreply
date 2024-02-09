@@ -14,7 +14,13 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ollie-autoreply/source": ["src/index.ts"]
+      "$/*": ["src/*"],
+      "$clients": ["src/clients/index.ts"],
+      "$clients/*": ["src/clients/*"],
+      "$listeners": ["src/listeners/index.ts"],
+      "$listeners/*": ["src/listeners/*"],
+      "$services": ["src/services/index.ts"],
+      "$services/*": ["src/services/*"]
     }
   },
   "files": [],

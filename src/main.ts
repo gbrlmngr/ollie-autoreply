@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { Container } from 'inversify';
 
-import { LoggingService } from './services';
-import { DiscordClient } from './clients';
+import { LoggingService } from '$services';
+import { DiscordClient } from '$clients';
 import { DISCORD_TOKEN } from './config';
 
 async function main() {
@@ -10,7 +10,7 @@ async function main() {
   DIContainer.bind<DiscordClient>(DiscordClient).toSelf();
   DIContainer.bind<LoggingService>(LoggingService).toSelf();
 
-  DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);
+  await DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);
 }
 
 main().catch((error) => {

@@ -19,7 +19,23 @@ export class LoggingService {
     return this;
   }
 
+  public trace(message: string, ...args: unknown[]) {
+    this.logger.trace(this.context, message, ...args);
+  }
+
+  public debug(message: string, ...args: unknown[]) {
+    this.logger.debug(this.context, message, ...args);
+  }
+
   public info(message: string, ...args: unknown[]) {
     this.logger.info(this.context, message, ...args);
+  }
+
+  public warn(message: string, ...args: unknown[]) {
+    this.logger.warn(this.context, message, ...args);
+  }
+
+  public error(message: string, ...args: unknown[]) {
+    this.logger.error(this.context, message, ...args);
   }
 }

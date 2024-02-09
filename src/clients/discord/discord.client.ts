@@ -3,8 +3,8 @@ import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
 import { Client, type ClientEvents } from 'discord.js';
 
-import { LoggingService } from '../../services';
-import { Listener } from '../../listeners';
+import { LoggingService } from '$services';
+import { Listener } from '$listeners';
 
 decorate(injectable(), Client);
 
