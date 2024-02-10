@@ -1,0 +1,22 @@
+import { inject } from 'inversify';
+import { Events, Guild } from 'discord.js';
+
+import { Listener } from './listener.interface';
+import { DiscordClient } from '../clients';
+
+export default class GuildDeleteListener
+  implements Listener<Events.GuildDelete>
+{
+  public readonly name = this.constructor.name;
+  public readonly eventName = Events.GuildDelete;
+  public readonly once = false;
+
+  public constructor(
+    @inject(DiscordClient) private readonly client: DiscordClient
+  ) {}
+
+  public async onRun(guild: Guild) {
+    const { id, name } = guild;
+    this.client.logger.info(`😓 Left a guild: "${name}" (${id})`);
+  }
+}

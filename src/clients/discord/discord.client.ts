@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
-import { Client, type ClientEvents } from 'discord.js';
+import { Client, GatewayIntentBits, type ClientEvents } from 'discord.js';
 import { EventEmitter } from 'eventemitter3';
 
 import { LoggingService } from '../../services';
@@ -22,7 +22,7 @@ export class DiscordClient<
     @inject(EventEmitter) public readonly ee: EventEmitter
   ) {
     super({
-      intents: [],
+      intents: [GatewayIntentBits.Guilds],
     });
 
     this.loadListeners();
@@ -37,6 +37,8 @@ export class DiscordClient<
         .map((fileName) => fileName.replace(/\.(t|j)s$/, ''));
 
       for (const listenerFile of listenerFiles) {
+        this.logger.debug(`Reading listener file "${listenerFile}"...`);
+
         const ListenerClass = (
           await import(
             resolve(__dirname, '..', '..', 'listeners', listenerFile)
@@ -49,8 +51,11 @@ export class DiscordClient<
         const listener = new ListenerClass(this) as Listener<
           keyof ClientEvents
         >;
-        if (listener.disabled) return;
+        if (listener.disabled) continue;
 
+        this.logger.debug(
+          `Registering event handler "${listener.name}" for event "${listener.eventName}"...`
+        );
         this[listener.once ? 'once' : 'on'](
           listener.eventName,
           async (...args) => {
