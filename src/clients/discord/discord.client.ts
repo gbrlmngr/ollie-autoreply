@@ -1,11 +1,17 @@
 import { resolve } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
-import { Client, GatewayIntentBits, type ClientEvents } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  type ClientEvents,
+  Collection,
+} from 'discord.js';
 import { EventEmitter } from 'eventemitter3';
 
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
+import { Command } from '../../commands';
 import { RedisClient } from '../redis';
 import { PrismaClient } from '../prisma';
 
@@ -15,6 +21,8 @@ decorate(injectable(), Client);
 export class DiscordClient<
   Ready extends boolean = boolean
 > extends Client<Ready> {
+  public readonly commands: Collection<string, Command> = new Collection();
+
   public constructor(
     @inject(LoggingService) public readonly logger: LoggingService,
     @inject(RedisClient) public readonly redis: RedisClient,
@@ -26,6 +34,7 @@ export class DiscordClient<
     });
 
     this.loadListeners();
+    this.loadCommands();
   }
 
   private async loadListeners() {
@@ -35,6 +44,11 @@ export class DiscordClient<
       )
         .filter((fileName) => /^(.+)\.listener\.(t|j)s$/.test(fileName))
         .map((fileName) => fileName.replace(/\.(t|j)s$/, ''));
+
+      if (!listenerFiles.length) {
+        this.logger.warn('No listener files have been found.');
+        return;
+      }
 
       for (const listenerFile of listenerFiles) {
         this.logger.debug(`Reading listener file "${listenerFile}"...`);
@@ -75,6 +89,44 @@ export class DiscordClient<
     } catch (error) {
       this.logger
         .error('🔴 Unable to load or run the listeners.')
+        .error(`🔴 Reason: ${error.message ?? error}`);
+    }
+  }
+
+  private async loadCommands() {
+    try {
+      const commandFiles = (
+        await readdir(resolve(__dirname, '..', '..', 'commands'))
+      )
+        .filter((fileName) => /^(.+)\.command\.(t|j)s$/.test(fileName))
+        .map((fileName) => fileName.replace(/\.(t|j)s$/, ''));
+
+      if (!commandFiles.length) {
+        this.logger.warn('No command files have been found.');
+        return;
+      }
+
+      for (const commandFile of commandFiles) {
+        this.logger.debug(`Reading command file "${commandFile}"...`);
+
+        const CommandClass = (
+          await import(
+            resolve(__dirname, '..', '..', 'commands', commandFile)
+          ).catch((error) => {
+            this.logger
+              .error(`🔴 Unable to import command "${commandFile}"`)
+              .error(`🔴 Reason: ${error.message ?? error}`);
+          })
+        ).default;
+
+        const command = new CommandClass(this) as Command;
+        if (command.disabled) continue;
+
+        this.commands.set(command.definition.name, command);
+      }
+    } catch (error) {
+      this.logger
+        .error('🔴 Unable to register the commands.')
         .error(`🔴 Reason: ${error.message ?? error}`);
     }
   }

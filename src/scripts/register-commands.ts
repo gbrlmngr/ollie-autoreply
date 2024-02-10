@@ -18,7 +18,7 @@ async function run() {
       .map((fileName) => fileName.replace(/\.(t|j)s$/, ''));
 
     if (!commandFiles.length) {
-      logger.warn(`⚠️  There are no commands to register yet.`);
+      this.logger.warn('No command files have been found.');
       return;
     }
 
