@@ -3,7 +3,7 @@ import { Container } from 'inversify';
 
 import { LoggingService } from './services';
 import { DiscordClient, RedisClient } from './clients';
-import { DISCORD_TOKEN } from './config';
+import { DISCORD_TOKEN } from './environment';
 
 async function main() {
   const DIContainer = new Container();

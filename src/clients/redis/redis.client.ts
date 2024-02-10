@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { inject, injectable, decorate } from 'inversify';
 import Redis from 'ioredis';
 
-import { REDIS_URL } from '../../config';
+import { REDIS_URL } from '../../environment';
 import { LoggingService } from '../../services';
 import { ExpiredKeyEvent } from './redis.interfaces';
 

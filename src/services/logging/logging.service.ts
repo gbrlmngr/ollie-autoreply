@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import { default as pino } from 'pino';
 import { type PrettyOptions } from 'pino-pretty';
 
-import { NODE_ENV } from '../../config';
+import { NODE_ENV } from '../../environment';
 
 @injectable()
 export class LoggingService {
