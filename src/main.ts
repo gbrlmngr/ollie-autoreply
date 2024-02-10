@@ -6,9 +6,9 @@ import { DiscordClient, RedisClient } from './clients';
 import { DISCORD_TOKEN } from './config';
 
 async function main() {
-  const DIContainer = new Container({ defaultScope: 'Singleton' });
-  DIContainer.bind<DiscordClient>(DiscordClient).toSelf();
-  DIContainer.bind<RedisClient>(RedisClient).toSelf();
+  const DIContainer = new Container();
+  DIContainer.bind<DiscordClient>(DiscordClient).toSelf().inSingletonScope();
+  DIContainer.bind<RedisClient>(RedisClient).toSelf().inSingletonScope();
   DIContainer.bind<LoggingService>(LoggingService).toSelf();
 
   await DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);

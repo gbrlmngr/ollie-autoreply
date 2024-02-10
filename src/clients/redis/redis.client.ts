@@ -31,9 +31,10 @@ export class RedisClient extends Redis {
   private async _onMessageEvent(channel: string, message: string) {
     switch (channel) {
       case ExpiredKeyEvent:
-        this.loggingService
-          .withContext({ client: RedisClient.name })
-          .info('ExpiredKeyEvent received: %o', { channel, message });
+        this.loggingService.info('ExpiredKeyEvent received: %o', {
+          channel,
+          message,
+        });
         return;
 
       default:

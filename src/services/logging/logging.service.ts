@@ -2,10 +2,12 @@ import { injectable } from 'inversify';
 import { default as pino } from 'pino';
 import { type PrettyOptions } from 'pino-pretty';
 
+import { NODE_ENV } from '../../config';
+
 @injectable()
 export class LoggingService {
-  private context: object = {};
   private readonly logger = pino({
+    level: NODE_ENV === 'development' ? 'debug' : 'info',
     transport: {
       target: 'pino-pretty',
       options: {
@@ -14,28 +16,28 @@ export class LoggingService {
     },
   });
 
-  public withContext(context: object) {
-    this.context = context ?? {};
+  public trace(message: string, ...args: unknown[]) {
+    this.logger.trace(message, ...args);
     return this;
   }
 
-  public trace(message: string, ...args: unknown[]) {
-    this.logger.trace(this.context, message, ...args);
-  }
-
   public debug(message: string, ...args: unknown[]) {
-    this.logger.debug(this.context, message, ...args);
+    this.logger.debug(message, ...args);
+    return this;
   }
 
   public info(message: string, ...args: unknown[]) {
-    this.logger.info(this.context, message, ...args);
+    this.logger.info(message, ...args);
+    return this;
   }
 
   public warn(message: string, ...args: unknown[]) {
-    this.logger.warn(this.context, message, ...args);
+    this.logger.warn(message, ...args);
+    return this;
   }
 
   public error(message: string, ...args: unknown[]) {
-    this.logger.error(this.context, message, ...args);
+    this.logger.error(message, ...args);
+    return this;
   }
 }
