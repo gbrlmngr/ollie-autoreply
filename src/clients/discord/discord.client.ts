@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
 import { Client, type ClientEvents } from 'discord.js';
+import { EventEmitter } from 'eventemitter3';
 
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
@@ -17,7 +18,8 @@ export class DiscordClient<
   public constructor(
     @inject(LoggingService) public readonly logger: LoggingService,
     @inject(RedisClient) public readonly redis: RedisClient,
-    @inject(PrismaClient) public readonly prisma: PrismaClient
+    @inject(PrismaClient) public readonly prisma: PrismaClient,
+    @inject(EventEmitter) public readonly ee: EventEmitter
   ) {
     super({
       intents: [],
