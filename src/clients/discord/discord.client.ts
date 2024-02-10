@@ -6,6 +6,7 @@ import { Client, type ClientEvents } from 'discord.js';
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
 import { RedisClient } from '../redis';
+import { PrismaClient } from '../prisma';
 
 decorate(injectable(), Client);
 
@@ -15,7 +16,8 @@ export class DiscordClient<
 > extends Client<Ready> {
   public constructor(
     @inject(LoggingService) public readonly logger: LoggingService,
-    @inject(RedisClient) public readonly redis: RedisClient
+    @inject(RedisClient) public readonly redis: RedisClient,
+    @inject(PrismaClient) public readonly prisma: PrismaClient
   ) {
     super({
       intents: [],

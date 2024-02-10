@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MYSQL_URL")
+}
+
+model Guilds {
+  id             String   @id @unique @default(cuid())
+  plan           Plans    @relation(fields: [planId], references: [id])
+  planId         String   @map("plan_id")
+  subscriptionId String?  @map("subscription_id")
+  ownerId        String   @map("owner_id")
+  settings       Json?    @default("{}")
+  registeredAt   DateTime @default(now()) @map("registered_at")
+
+  @@map("guilds")
+}
+
+model Plans {
+  id       String   @id @unique @default(cuid())
+  name     String
+  features Json?    @default("{}")
+  guild    Guilds[]
+
+  @@map("plans")
+}
