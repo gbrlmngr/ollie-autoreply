@@ -44,10 +44,11 @@ export class DiscordClient<
             resolve(__dirname, '..', '..', 'listeners', listenerFile)
           ).catch((error) => {
             this.logger
-              .error(`🔴 Unable to import listener "${listenerFile}"`)
+              .error(`🔴 Unable to import listener "${listenerFile}".`)
               .error(`🔴 Reason: ${error.message ?? error}`);
           })
         ).default;
+
         const listener = new ListenerClass(this) as Listener<
           keyof ClientEvents
         >;
@@ -64,7 +65,7 @@ export class DiscordClient<
             } catch (error) {
               this.logger
                 .error(
-                  `🔴 Unable to run listener "${listener.name}" for event "${listener.eventName}"`
+                  `🔴 Unable to run listener "${listener.name}" for event "${listener.eventName}".`
                 )
                 .error(`🔴 Reason: ${error.message ?? error}`);
             }
@@ -73,7 +74,7 @@ export class DiscordClient<
       }
     } catch (error) {
       this.logger
-        .error('🔴 Unable to load or run the listeners')
+        .error('🔴 Unable to load or run the listeners.')
         .error(`🔴 Reason: ${error.message ?? error}`);
     }
   }

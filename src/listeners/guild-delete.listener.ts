@@ -1,7 +1,7 @@
 import { inject } from 'inversify';
 import { Events, Guild } from 'discord.js';
 
-import { Listener } from './listener.interface';
+import { Listener } from './listener.interfaces';
 import { DiscordClient } from '../clients';
 
 export default class GuildDeleteListener

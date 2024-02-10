@@ -1,1 +1,1 @@
-export * from './listener.interface';
+export * from './listener.interfaces';

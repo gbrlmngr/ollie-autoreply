@@ -1,7 +1,7 @@
 import { Events } from 'discord.js';
 
 import { DiscordClient } from '../clients';
-import { Listener } from './listener.interface';
+import { Listener } from './listener.interfaces';
 
 export default class ClientReadyListener
   implements Listener<Events.ClientReady>
@@ -12,6 +12,8 @@ export default class ClientReadyListener
 
   public async onRun(client: DiscordClient<true>) {
     const { id, displayName } = client.user;
-    client.logger.info(`🔐 Successfully logged in as "${displayName}" (${id})`);
+    client.logger.info(
+      `🔐 Successfully logged in as: "${displayName}" (${id})`
+    );
   }
 }

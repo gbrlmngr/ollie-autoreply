@@ -30,6 +30,10 @@
     "start": {
       "dependsOn": ["build"],
       "command": "node ./dist/src/main.js"
+    },
+    "register_commands": {
+      "dependsOn": ["build"],
+      "command": "node ./dist/src/scripts/register-commands.js"
     }
   },
   "tags": []

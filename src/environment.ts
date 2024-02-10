@@ -12,6 +12,11 @@ export const DISCORD_TOKEN = fromProcessEnv()
   .required()
   .asString();
 
+export const DISCORD_APPID = fromProcessEnv()
+  .get('DISCORD_APPID')
+  .required()
+  .asString();
+
 export const REDIS_URL = fromProcessEnv()
   .get('REDIS_URL')
   .required()
