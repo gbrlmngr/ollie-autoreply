@@ -1,3 +1,4 @@
+import { performance, PerformanceObserver } from 'node:perf_hooks';
 import { resolve } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
@@ -26,6 +27,16 @@ export class DiscordClient<
   Ready extends boolean = boolean
 > extends Client<Ready> {
   public readonly commands: Collection<string, Command> = new Collection();
+  private readonly performanceObserver: PerformanceObserver =
+    new PerformanceObserver((list) => {
+      for (const { name, entryType, duration } of list.getEntries()) {
+        this.logger.trace(
+          `Timing: "${name}" (of type "${entryType}") took ${duration.toFixed(
+            4
+          )}ms.`
+        );
+      }
+    });
 
   public constructor(
     @inject(LoggingService) public readonly logger: LoggingService,
@@ -39,6 +50,7 @@ export class DiscordClient<
       intents: [GatewayIntentBits.Guilds],
     });
 
+    this.performanceObserver.observe({ entryTypes: ['function', 'measure'] });
     this.loadListeners();
     this.loadCommands();
   }
@@ -81,7 +93,14 @@ export class DiscordClient<
           listener.eventName,
           async (...args) => {
             try {
+              performance.mark('listener.onRun():start');
               await listener.onRun(...args);
+              performance.mark('listener.onRun():end');
+              performance.measure(
+                'listener.onRun()',
+                'listener.onRun():start',
+                'listener.onRun():end'
+              );
             } catch (error) {
               this.logger
                 .error(

@@ -7,7 +7,7 @@ import { NODE_ENV } from '../../environment';
 @injectable()
 export class LoggingService {
   private readonly logger = pino({
-    level: NODE_ENV === 'development' ? 'debug' : 'info',
+    level: NODE_ENV === 'development' ? 'trace' : 'info',
     transport: {
       target: 'pino-pretty',
       options: {

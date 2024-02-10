@@ -12,8 +12,6 @@ export interface Command<
   onRun(interaction: CommandInteraction): Awaitable<void>;
 }
 
-export class CommandCooldownException extends Error {
-  public constructor() {
-    super();
-  }
-}
+export class CommandCooldownException extends Error {}
+
+export class CommandNotAllowedException extends Error {}
