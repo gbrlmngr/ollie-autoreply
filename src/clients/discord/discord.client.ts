@@ -8,10 +8,14 @@ import {
   Collection,
 } from 'discord.js';
 import { EventEmitter } from 'eventemitter3';
+import {
+  RateLimiterRedis,
+  type IRateLimiterRedisOptions,
+} from 'rate-limiter-flexible';
 
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
-import { Command } from '../../commands';
+import { Command, CommandCooldownException } from '../../commands';
 import { RedisClient } from '../redis';
 import { PrismaClient } from '../prisma';
 
@@ -27,7 +31,9 @@ export class DiscordClient<
     @inject(LoggingService) public readonly logger: LoggingService,
     @inject(RedisClient) public readonly redis: RedisClient,
     @inject(PrismaClient) public readonly prisma: PrismaClient,
-    @inject(EventEmitter) public readonly ee: EventEmitter
+    @inject(EventEmitter) public readonly ee: EventEmitter,
+    @inject(`Factory<${RateLimiterRedis.name}>`)
+    public readonly rlr: (options: IRateLimiterRedisOptions) => RateLimiterRedis
   ) {
     super({
       intents: [GatewayIntentBits.Guilds],
@@ -119,12 +125,16 @@ export class DiscordClient<
           })
         ).default;
 
-        const command = new CommandClass(this) as Command;
+        const command = new CommandClass(this, this.rlr) as Command;
         if (command.disabled) continue;
 
         this.commands.set(command.definition.name, command);
       }
     } catch (error) {
+      if (error instanceof CommandCooldownException) {
+        //
+      }
+
       this.logger
         .error('🔴 Unable to register the commands.')
         .error(`🔴 Reason: ${error.message ?? error}`);

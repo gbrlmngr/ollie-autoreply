@@ -1,4 +1,3 @@
-import { inject } from 'inversify';
 import { Events, Guild } from 'discord.js';
 
 import { Listener } from './listener.interfaces';
@@ -11,9 +10,7 @@ export default class GuildCreateListener
   public readonly eventName = Events.GuildCreate;
   public readonly once = false;
 
-  public constructor(
-    @inject(DiscordClient) private readonly client: DiscordClient
-  ) {}
+  public constructor(private readonly client: DiscordClient) {}
 
   public async onRun(guild: Guild) {
     const { id, name } = guild;

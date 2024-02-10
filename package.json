@@ -17,6 +17,7 @@
     "ioredis": "^5.3.2",
     "pino": "^8.18.0",
     "pino-pretty": "^10.3.1",
+    "rate-limiter-flexible": "^4.0.1",
     "reflect-metadata": "^0.2.1",
     "tslib": "^2.3.0"
   },
