@@ -7,6 +7,11 @@ export const NODE_ENV = fromProcessEnv()
   .default('development')
   .asEnum(['development', 'production']);
 
+export const LOG_LEVEL_OVERRIDE = fromProcessEnv()
+  .get('LOG_LEVEL_OVERRIDE')
+  // https://github.com/pinojs/pino/blob/master/docs/api.md#level-string
+  .asEnum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent', '']);
+
 export const DISCORD_TOKEN = fromProcessEnv()
   .get('DISCORD_TOKEN')
   .required()
@@ -19,5 +24,10 @@ export const DISCORD_APPID = fromProcessEnv()
 
 export const REDIS_URL = fromProcessEnv()
   .get('REDIS_URL')
+  .required()
+  .asString();
+
+export const MYSQL_URL = fromProcessEnv()
+  .get('MYSQL_URL')
   .required()
   .asString();

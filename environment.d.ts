@@ -5,6 +5,7 @@ declare global {
       DISCORD_TOKEN: string;
       DISCORD_APPID: string;
       REDIS_URL: string;
+      MYSQL_URL: string;
     }
   }
 }

@@ -2,12 +2,13 @@ import { injectable } from 'inversify';
 import { default as pino } from 'pino';
 import { type PrettyOptions } from 'pino-pretty';
 
-import { NODE_ENV } from '../../environment';
+import { LOG_LEVEL_OVERRIDE, NODE_ENV } from '../../environment';
 
 @injectable()
 export class LoggingService {
   private readonly logger = pino({
-    level: NODE_ENV === 'development' ? 'trace' : 'info',
+    level:
+      LOG_LEVEL_OVERRIDE || (NODE_ENV === 'development' ? 'trace' : 'info'),
     transport: {
       target: 'pino-pretty',
       options: {
