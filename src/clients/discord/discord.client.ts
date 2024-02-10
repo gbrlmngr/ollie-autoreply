@@ -16,7 +16,11 @@ import {
 
 import { LoggingService } from '../../services';
 import { Listener } from '../../listeners';
-import { Command, CommandCooldownException } from '../../commands';
+import {
+  Command,
+  CommandCooldownException,
+  CommandNotAllowedException,
+} from '../../commands';
 import { RedisClient } from '../redis';
 import { PrismaClient } from '../prisma';
 
@@ -144,14 +148,18 @@ export class DiscordClient<
           })
         ).default;
 
-        const command = new CommandClass(this, this.rlr) as Command;
+        const command = new CommandClass(this) as Command;
         if (command.disabled) continue;
 
         this.commands.set(command.definition.name, command);
       }
     } catch (error) {
       if (error instanceof CommandCooldownException) {
-        //
+        return;
+      }
+
+      if (error instanceof CommandNotAllowedException) {
+        return;
       }
 
       this.logger
