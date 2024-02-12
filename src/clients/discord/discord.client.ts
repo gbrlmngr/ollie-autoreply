@@ -14,7 +14,7 @@ import {
   type IRateLimiterRedisOptions,
 } from 'rate-limiter-flexible';
 
-import { LoggingService } from '../../services';
+import { LoggingService, I18NService } from '../../services';
 import { Listener } from '../../listeners';
 import {
   Command,
@@ -44,6 +44,7 @@ export class DiscordClient<
 
   public constructor(
     @inject(LoggingService) public readonly logger: LoggingService,
+    @inject(I18NService) public readonly i18n: I18NService,
     @inject(RedisClient) public readonly redis: RedisClient,
     @inject(PrismaClient) public readonly prisma: PrismaClient,
     @inject(EventEmitter) public readonly ee: EventEmitter,

@@ -1,0 +1,5 @@
+{
+  "en": {
+    "example": "{count, plural, =0 {No examples} =1 {Only one example} other {Many examples}}"
+  }
+}

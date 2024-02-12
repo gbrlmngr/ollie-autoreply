@@ -6,7 +6,7 @@ import {
   type IRateLimiterRedisOptions,
 } from 'rate-limiter-flexible';
 
-import { LoggingService } from './services';
+import { LoggingService, I18NService } from './services';
 import { DiscordClient, PrismaClient, RedisClient } from './clients';
 import { DISCORD_TOKEN } from './environment';
 
@@ -22,7 +22,7 @@ async function main() {
   DIContainer.bind<RedisClient>(RedisClient).toSelf();
   DIContainer.bind<PrismaClient>(PrismaClient).toSelf();
   DIContainer.bind<LoggingService>(LoggingService).toSelf();
-
+  DIContainer.bind(I18NService).toSelf();
   DIContainer.bind<(options: IRateLimiterRedisOptions) => RateLimiterRedis>(
     `Factory<${RateLimiterRedis.name}>`
   ).toFactory<RateLimiterRedis>(
