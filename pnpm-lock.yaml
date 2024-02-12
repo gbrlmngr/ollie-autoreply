@@ -47,9 +47,6 @@ dependencies:
   tslib:
     specifier: ^2.3.0
     version: 2.6.2
-  type-fest:
-    specifier: ^4.10.2
-    version: 4.10.2
 
 devDependencies:
   '@nx/eslint':
@@ -7654,14 +7651,6 @@ packages:
       }
     engines: { node: '>=10' }
     dev: true
-
-  /type-fest@4.10.2:
-    resolution:
-      {
-        integrity: sha512-anpAG63wSpdEbLwOqH8L84urkL6PiVIov3EMmgIhhThevh9aiMQov+6Btx0wldNcvm4wV+e2/Rt1QdDwKHFbHw==,
-      }
-    engines: { node: '>=16' }
-    dev: false
 
   /typescript@5.3.3:
     resolution:

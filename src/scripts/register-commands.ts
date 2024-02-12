@@ -35,7 +35,7 @@ async function run() {
         )
       ).default;
 
-      const command = new CommandClass(this) as Command;
+      const command = new CommandClass() as Command;
       if (command.disabled) continue;
 
       commands.add(command);

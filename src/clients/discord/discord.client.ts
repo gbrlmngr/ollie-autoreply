@@ -48,7 +48,11 @@ export class DiscordClient<
     public readonly rlr: (options: IRateLimiterRedisOptions) => RateLimiterRedis
   ) {
     super({
-      intents: [GatewayIntentBits.Guilds],
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+      ],
     });
 
     this.performanceObserver.observe({ entryTypes: ['function', 'measure'] });
