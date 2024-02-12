@@ -33,12 +33,8 @@ export class DiscordClient<
   public readonly commands: Collection<string, Command> = new Collection();
   private readonly performanceObserver: PerformanceObserver =
     new PerformanceObserver((list) => {
-      for (const { name, entryType, duration } of list.getEntries()) {
-        this.logger.trace(
-          `Timing: "${name}" (of type "${entryType}") took ${duration.toFixed(
-            4
-          )}ms.`
-        );
+      for (const { name, duration } of list.getEntries()) {
+        this.logger.trace(`"${name}" took ${duration.toFixed(4)}ms.`);
       }
     });
 
@@ -98,13 +94,13 @@ export class DiscordClient<
           listener.eventName,
           async (...args) => {
             try {
-              performance.mark('listener.onRun():start');
+              performance.mark(`${listener.name}.onRun():start`);
               await listener.onRun(...args);
-              performance.mark('listener.onRun():end');
+              performance.mark(`${listener.name}.onRun():end`);
               performance.measure(
-                'listener.onRun()',
-                'listener.onRun():start',
-                'listener.onRun():end'
+                `${listener.name}.onRun()`,
+                `${listener.name}.onRun():start`,
+                `${listener.name}.onRun():end`
               );
             } catch (error) {
               this.logger
