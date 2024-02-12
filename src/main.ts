@@ -26,7 +26,11 @@ async function main() {
   DIContainer.bind<(options: IRateLimiterRedisOptions) => RateLimiterRedis>(
     `Factory<${RateLimiterRedis.name}>`
   ).toFactory<RateLimiterRedis>(
-    () => (options: IRateLimiterRedisOptions) => new RateLimiterRedis(options)
+    () => (options: IRateLimiterRedisOptions) =>
+      new RateLimiterRedis({
+        keyPrefix: 'ollie/rl',
+        ...options,
+      })
   );
 
   await DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);
