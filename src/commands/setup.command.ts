@@ -17,7 +17,7 @@ export default class SetupCommand implements Command {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  public constructor(private readonly client: DiscordClient) {}
+  public constructor(private readonly client: DiscordClient) { }
 
   public async onRun(interaction: CommandInteraction) {
     await interaction.reply(

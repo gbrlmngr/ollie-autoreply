@@ -12,8 +12,6 @@ export default class ClientReadyListener
 
   public async onRun(client: DiscordClient<true>) {
     const { id, displayName } = client.user;
-    client.logger.info(
-      `🔐 Successfully logged in as: "${displayName}" (${id})`
-    );
+    client.logger.info(`🔐 Successfully logged in as "${displayName}" (${id})`);
   }
 }

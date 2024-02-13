@@ -55,7 +55,7 @@ export class DiscordClient<
       ],
     });
 
-    this.performanceObserver.observe({ entryTypes: ['function', 'measure'] });
+    this.performanceObserver.observe({ entryTypes: ['measure'] });
     this.loadListeners();
     this.loadCommands();
   }

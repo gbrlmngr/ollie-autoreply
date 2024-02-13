@@ -2,8 +2,7 @@
   "en-GB": {
     "commands": {
       "setup": {
-        "description": "Enable Ollie",
-        "test": "Hello"
+        "description": "Enable Ollie"
       }
     }
   }
