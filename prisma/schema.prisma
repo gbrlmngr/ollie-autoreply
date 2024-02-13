@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Guilds {
-  id             String   @id @unique @default(cuid())
+  id             String   @id @unique
   plan           Plans    @relation(fields: [planId], references: [id])
   planId         String   @map("plan_id")
   subscriptionId String?  @map("subscription_id")
@@ -23,10 +23,12 @@ model Guilds {
 }
 
 model Plans {
-  id       String   @id @unique @default(cuid())
+  id       String   @id @unique
+  code     String   @unique
   name     String
   features Json?    @default("{}")
   guild    Guilds[]
 
+  @@index([code])
   @@map("plans")
 }

@@ -32,6 +32,12 @@ dependencies:
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
+  nanoid:
+    specifier: ^3.3.0
+    version: 3.3.7
+  nanoid-dictionary:
+    specifier: ^4.3.0
+    version: 4.3.0
   pino:
     specifier: ^8.18.0
     version: 8.18.0
@@ -79,6 +85,9 @@ devDependencies:
   '@types/lodash':
     specifier: ^4.14.202
     version: 4.14.202
+  '@types/nanoid-dictionary':
+    specifier: ^4.2.3
+    version: 4.2.3
   '@types/node':
     specifier: 18.16.9
     version: 18.16.9
@@ -3375,6 +3384,13 @@ packages:
       }
     dev: true
 
+  /@types/nanoid-dictionary@4.2.3:
+    resolution:
+      {
+        integrity: sha512-T98Halw1f2aJ802GtCNMHZgqX2q1LX85eMP+K7N+OXSLagdmAzooAEhB565FQXTiCxdF4wNijOBroAQJat4uig==,
+      }
+    dev: true
+
   /@types/node@18.16.9:
     resolution:
       {
@@ -6209,6 +6225,13 @@ packages:
       }
     dev: true
 
+  /nanoid-dictionary@4.3.0:
+    resolution:
+      {
+        integrity: sha512-Xw1+/QnRGWO1KJ0rLfU1xR85qXmAHyLbE3TUkklu9gOIDburP6CsUnLmTaNECGpBh5SHb2uPFmx0VT8UPyoeyw==,
+      }
+    dev: false
+
   /nanoid@3.3.7:
     resolution:
       {
@@ -6216,7 +6239,6 @@ packages:
       }
     engines: { node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1 }
     hasBin: true
-    dev: true
 
   /natural-compare@1.4.0:
     resolution:
