@@ -10,9 +10,9 @@ datasource db {
   url      = env("MYSQL_URL")
 }
 
-model Guilds {
+model Guild {
   id             String   @id @unique
-  plan           Plans    @relation(fields: [planId], references: [id])
+  plan           Plan     @relation(fields: [planId], references: [id])
   planId         String   @map("plan_id")
   subscriptionId String?  @map("subscription_id")
   ownerId        String   @map("owner_id")
@@ -22,11 +22,11 @@ model Guilds {
   @@map("guilds")
 }
 
-model Plans {
-  id       String   @id @unique
+model Plan {
+  id       String  @id @unique
   name     String
-  features Json?    @default("{}")
-  guild    Guilds[]
+  features Json?   @default("{}")
+  guild    Guild[]
 
   @@map("plans")
 }
