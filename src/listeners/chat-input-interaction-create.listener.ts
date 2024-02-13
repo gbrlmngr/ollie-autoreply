@@ -1,6 +1,7 @@
 import { CacheType, Events, Interaction } from 'discord.js';
 
 import { DiscordClient } from '../clients';
+import { CommandCooldownException } from '../commands';
 import { Listener } from './listener.interfaces';
 
 export default class ChatInputInteractionCreate
@@ -27,6 +28,15 @@ export default class ChatInputInteractionCreate
         `${command.constructor.name}.onRun():end`
       );
     } catch (error) {
+      if (error instanceof CommandCooldownException) {
+        // Send cooldown embed
+        this.client.logger.warn(
+          'Breaking the cooldown! Wait: %i',
+          error.waitMs
+        );
+        return;
+      }
+
       this.client.logger
         .error(`🔴 Unable to run command "${command.constructor.name}".`)
         .error(`🔴 Reason: ${error.message ?? error}`);

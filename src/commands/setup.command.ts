@@ -4,12 +4,13 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from 'discord.js';
+import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { DiscordClient } from '../clients';
-import { GuildSettings, PlanIDs } from '../shared.interfaces';
-import { Command } from './command.interfaces';
+import { Command, CommandCooldownException } from './command.interfaces';
 
 export default class SetupCommand implements Command {
+  public readonly limiter: RateLimiterAbstract;
   public readonly definition = new SlashCommandBuilder()
     .setName('setup')
     .setDescription(
@@ -18,29 +19,26 @@ export default class SetupCommand implements Command {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  public constructor(private readonly client: DiscordClient) {}
+  public constructor(private readonly client: DiscordClient) {
+    this.limiter = client.rlr({
+      storeClient: client.redis,
+      points: 0,
+      duration: 60,
+    });
+  }
 
   public async onRun(interaction: CommandInteraction) {
-    const { guild } = interaction;
+    const { user } = interaction;
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      await this.client.prisma.guild.create({
-        data: {
-          id: guild.id,
-          ownerId: guild.ownerId,
-          settings: {} as GuildSettings,
-          planId: PlanIDs.Free,
-          subscriptionId: null,
-          registeredAt: new Date(),
-        },
-      });
+      await this.limiter.consume(user.id, 1);
 
       await interaction.editReply('Success!');
     } catch (error) {
-      if (error?.code === 'P2002') {
-        await interaction.editReply('You are already registered');
-        return;
+      if (!(error instanceof Error)) {
+        const { msBeforeNext } = error as RateLimiterRes;
+        throw new CommandCooldownException(msBeforeNext);
       }
 
       throw error;
