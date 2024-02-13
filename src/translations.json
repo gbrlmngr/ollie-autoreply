@@ -4,6 +4,24 @@
       "setup": {
         "description": "Enable Ollie"
       }
+    },
+    "embeds": {
+      "author": "Ollie, the Penguin",
+      "setup": {
+        "upgrade_footer": "Need more? Consider upgrading to another plan.",
+        "title": "You're set up and ready to go!",
+        "description": "The wicked machinery has been enabled on your guild.",
+        "inboxes_quota_field": {
+          "name": "Available inboxes",
+          "value": "{count, number}",
+          "infinite_value": "∞"
+        },
+        "inbox_capacity_field": {
+          "name": "Capacity per inbox",
+          "value": "{count, plural, =1 {# message} other {# messages}}",
+          "infinite_value": "∞ messages"
+        }
+      }
     }
   }
 }

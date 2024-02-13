@@ -1,5 +1,6 @@
 import {
   CommandInteraction,
+  EmbedBuilder,
   Locale,
   PermissionFlagsBits,
   SlashCommandBuilder,
@@ -7,6 +8,7 @@ import {
 import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { DiscordClient } from '../clients';
+import { SecondaryEmbedColor } from '../shared.interfaces';
 import { Command, CommandCooldownException } from './command.interfaces';
 
 export default class SetupCommand implements Command {
@@ -22,7 +24,7 @@ export default class SetupCommand implements Command {
   public constructor(private readonly client: DiscordClient) {
     this.limiter = client.rlr({
       storeClient: client.redis,
-      points: 0,
+      points: 120,
       duration: 60,
     });
   }
@@ -34,7 +36,9 @@ export default class SetupCommand implements Command {
     try {
       await this.limiter.consume(user.id, 1);
 
-      await interaction.editReply('Success!');
+      await interaction.editReply({
+        embeds: [this.buildSuccessfulSetupEmbed(Locale.EnglishGB, -1, 0)],
+      });
     } catch (error) {
       if (!(error instanceof Error)) {
         const { msBeforeNext } = error as RateLimiterRes;
@@ -43,5 +47,57 @@ export default class SetupCommand implements Command {
 
       throw error;
     }
+  }
+
+  private buildSuccessfulSetupEmbed(
+    guildLocale: Locale.EnglishGB,
+    inboxesQuota: number,
+    inboxCapacity: number
+  ) {
+    return new EmbedBuilder()
+      .setColor(SecondaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL:
+          'https://cdn.discordapp.com/app-icons/1198622724340326451/02c4ecd6c38b0fc7b5adb4b4bdc9d6b9.png?size=512',
+      })
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.setup.title'))
+      .setURL('https://ollie.gbrlmngr.dev/faq#setup')
+      .setDescription(
+        this.client.i18n.t(guildLocale, 'embeds.setup.description')
+      )
+      .setFooter({
+        text: this.client.i18n.t(guildLocale, 'embeds.setup.upgrade_footer'),
+      })
+      .addFields(
+        {
+          name: this.client.i18n.t(
+            guildLocale,
+            'embeds.setup.inboxes_quota_field.name'
+          ),
+          value: this.client.i18n.t(
+            guildLocale,
+            inboxesQuota === -1
+              ? 'embeds.setup.inboxes_quota_field.infinite_value'
+              : 'embeds.setup.inboxes_quota_field.value',
+            { count: inboxesQuota }
+          ),
+          inline: true,
+        },
+        {
+          name: this.client.i18n.t(
+            guildLocale,
+            'embeds.setup.inbox_capacity_field.name'
+          ),
+          value: this.client.i18n.t(
+            guildLocale,
+            inboxCapacity === -1
+              ? 'embeds.setup.inbox_capacity_field.infinite_value'
+              : 'embeds.setup.inbox_capacity_field.value',
+            { count: inboxCapacity }
+          ),
+          inline: true,
+        }
+      );
   }
 }
