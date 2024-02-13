@@ -6,7 +6,7 @@ async function run() {
   await prisma.plan.createMany({
     data: [
       {
-        id: 'FREE',
+        id: 'PLAN_FREE',
         name: 'Free plan',
         features: {
           maximumNumberOfInboxes: 10,
