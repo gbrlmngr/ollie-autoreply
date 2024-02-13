@@ -12,7 +12,7 @@ export default class SetupCommand implements Command {
   public readonly definition = new SlashCommandBuilder()
     .setName('setup')
     .setDescription(
-      this.client.i18n.t(Locale.EnglishUS, 'commands.setup.description')
+      this.client.i18n.t(Locale.EnglishGB, 'commands.setup.description')
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
@@ -21,7 +21,7 @@ export default class SetupCommand implements Command {
 
   public async onRun(interaction: CommandInteraction) {
     await interaction.reply(
-      this.client.i18n.t(interaction.guildLocale, 'commands.setup.description2')
+      this.client.i18n.t(Locale.EnglishGB, 'commands.setup.description')
     );
   }
 }

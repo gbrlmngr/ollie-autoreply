@@ -1,8 +1,9 @@
 {
-  "en": {
+  "en-GB": {
     "commands": {
       "setup": {
-        "description": "Enable Ollie"
+        "description": "Enable Ollie",
+        "test": "Hello"
       }
     }
   }

@@ -1,20 +1,22 @@
 import { injectable } from 'inversify';
-import MessageFormat, { PrimitiveType } from 'intl-messageformat';
+import MessageFormat, { type PrimitiveType } from 'intl-messageformat';
 import { has, get } from 'lodash';
-import { Locale } from 'discord.js';
+import { LocaleString as DiscordLocaleString } from 'discord.js';
+import type { Paths, Get } from 'type-fest';
 
 import * as translations from '../../translations.json';
 
 @injectable()
 export class I18NService {
-  public t(
+  public t<Locale extends DiscordLocaleString>(
     locale: Locale,
-    translationKey: string,
+    translationKey: Paths<Get<typeof translations, Locale>>,
     translationVars: Record<string, void | PrimitiveType> = {}
   ): string {
-    const rootLocale = locale.replace(/[-_](.+)$/i, '');
     const translation = get(
-      translations[has(translations, rootLocale) ? rootLocale : 'en'],
+      has(translations, locale)
+        ? translations[locale as string]
+        : translations['en-GB'],
       translationKey
     );
 
