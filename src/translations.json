@@ -7,6 +7,10 @@
     },
     "embeds": {
       "author": "Ollie, the Penguin",
+      "cooldown": {
+        "title": "Out of service!",
+        "description": "I might have ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again."
+      },
       "setup": {
         "upgrade_footer": "Need more? Consider upgrading to another plan.",
         "title": "You're set up and ready to go!",

@@ -8,7 +8,7 @@ import {
 import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { DiscordClient } from '../clients';
-import { SecondaryEmbedColor } from '../shared.interfaces';
+import { EmbedAuthorIconUrl, SecondaryEmbedColor } from '../shared.interfaces';
 import { Command, CommandCooldownException } from './command.interfaces';
 
 export default class SetupCommand implements Command {
@@ -24,7 +24,7 @@ export default class SetupCommand implements Command {
   public constructor(private readonly client: DiscordClient) {
     this.limiter = client.rlr({
       storeClient: client.redis,
-      points: 120,
+      points: 1,
       duration: 60,
     });
   }
@@ -58,8 +58,7 @@ export default class SetupCommand implements Command {
       .setColor(SecondaryEmbedColor)
       .setAuthor({
         name: this.client.i18n.t(guildLocale, 'embeds.author'),
-        iconURL:
-          'https://cdn.discordapp.com/app-icons/1198622724340326451/02c4ecd6c38b0fc7b5adb4b4bdc9d6b9.png?size=512',
+        iconURL: EmbedAuthorIconUrl,
       })
       .setTitle(this.client.i18n.t(guildLocale, 'embeds.setup.title'))
       .setURL('https://ollie.gbrlmngr.dev/faq#setup')

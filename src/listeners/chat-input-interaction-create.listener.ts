@@ -1,7 +1,15 @@
-import { CacheType, Events, Interaction } from 'discord.js';
+import {
+  CacheType,
+  EmbedBuilder,
+  Events,
+  Interaction,
+  Locale,
+} from 'discord.js';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 import { DiscordClient } from '../clients';
 import { CommandCooldownException } from '../commands';
+import { EmbedAuthorIconUrl, TernaryEmbedColor } from '../shared.interfaces';
 import { Listener } from './listener.interfaces';
 
 export default class ChatInputInteractionCreate
@@ -29,11 +37,11 @@ export default class ChatInputInteractionCreate
       );
     } catch (error) {
       if (error instanceof CommandCooldownException) {
-        // Send cooldown embed
-        this.client.logger.warn(
-          'Breaking the cooldown! Wait: %i',
-          error.waitMs
-        );
+        await interaction.editReply({
+          embeds: [
+            this.buildCommandCooldownEmbed(Locale.EnglishGB, error.waitMs),
+          ],
+        });
         return;
       }
 
@@ -41,5 +49,20 @@ export default class ChatInputInteractionCreate
         .error(`🔴 Unable to run command "${command.constructor.name}".`)
         .error(`🔴 Reason: ${error.message ?? error}`);
     }
+  }
+
+  private buildCommandCooldownEmbed(guildLocale: Locale.EnglishGB, waitMs = 0) {
+    return new EmbedBuilder()
+      .setColor(TernaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.cooldown.title'))
+      .setDescription(
+        this.client.i18n.t(guildLocale, 'embeds.cooldown.description', {
+          wait: formatDistanceToNowStrict(Date.now() + waitMs),
+        })
+      );
   }
 }
