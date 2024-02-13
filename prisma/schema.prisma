@@ -24,11 +24,9 @@ model Guilds {
 
 model Plans {
   id       String   @id @unique
-  code     String   @unique
   name     String
   features Json?    @default("{}")
   guild    Guilds[]
 
-  @@index([code])
   @@map("plans")
 }

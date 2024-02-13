@@ -1,18 +1,18 @@
 import { PrismaClient } from '@prisma/client';
-import { customAlphabet } from 'nanoid';
-import { lowercase, numbers } from 'nanoid-dictionary';
 
 const prisma = new PrismaClient();
-const nanoid = customAlphabet(`${lowercase}${numbers}`);
 
 async function run() {
   await prisma.plans.createMany({
     data: [
       {
-        id: `pln_${nanoid(21)}`,
-        code: 'FREE_PLAN',
+        id: 'FREE',
         name: 'Free plan',
-        features: { maximumInboxes: 10, inboxCapacity: 5 },
+        features: {
+          maximumNumberOfInboxes: 10,
+          useUnlimitedInboxes: false,
+          maximumInboxCapacity: 3,
+        },
       },
     ],
     skipDuplicates: true,
