@@ -8,7 +8,14 @@ import {
 import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { DiscordClient } from '../clients';
-import { EmbedAuthorIconUrl, SecondaryEmbedColor } from '../shared.interfaces';
+import {
+  EmbedAuthorIconUrl,
+  GuildSettings,
+  PlanFeatures,
+  PlanIDs,
+  SecondaryEmbedColor,
+} from '../shared.interfaces';
+import { NODE_ENV } from '../environment';
 import { Command, CommandCooldownException } from './command.interfaces';
 
 export default class SetupCommand implements Command {
@@ -24,22 +31,54 @@ export default class SetupCommand implements Command {
   public constructor(private readonly client: DiscordClient) {
     this.limiter = client.rlr({
       storeClient: client.redis,
-      points: 1,
+      points: NODE_ENV === 'development' ? 600 : 1,
       duration: 60,
     });
   }
 
   public async onRun(interaction: CommandInteraction) {
-    const { user } = interaction;
+    const { guild, user } = interaction;
     await interaction.deferReply({ ephemeral: true });
 
     try {
       await this.limiter.consume(user.id, 1);
 
+      const { plan } = await this.client.prisma.guild.create({
+        data: {
+          id: guild.id,
+          ownerId: guild.ownerId,
+          planId: PlanIDs.Free,
+          subscriptionId: null,
+          settings: {} as GuildSettings,
+          registeredBy: user.id,
+          registeredAt: new Date(),
+        },
+        include: { plan: true },
+      });
+
+      const planFeatures = (plan?.features ?? {}) as unknown as PlanFeatures;
+
       await interaction.editReply({
-        embeds: [this.buildSuccessfulSetupEmbed(Locale.EnglishGB, -1, 0)],
+        embeds: [
+          this.buildSuccessfulSetupEmbed(
+            Locale.EnglishGB,
+            planFeatures.useUnlimitedInboxes
+              ? -1
+              : planFeatures.inboxesQuota ?? 0,
+            planFeatures.useUnlimitedInboxCapacity
+              ? -1
+              : planFeatures.inboxCapacity ?? 0
+          ),
+        ],
       });
     } catch (error) {
+      if (error?.code === 'P2002') {
+        await interaction.editReply({
+          embeds: [this.buildAlreadyEnabledEmbed(Locale.EnglishGB)],
+        });
+        return;
+      }
+
       if (!(error instanceof Error)) {
         const { msBeforeNext } = error as RateLimiterRes;
         throw new CommandCooldownException(msBeforeNext);
@@ -60,10 +99,10 @@ export default class SetupCommand implements Command {
         name: this.client.i18n.t(guildLocale, 'embeds.author'),
         iconURL: EmbedAuthorIconUrl,
       })
-      .setTitle(this.client.i18n.t(guildLocale, 'embeds.setup.title'))
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.setup.success_title'))
       .setURL('https://ollie.gbrlmngr.dev/faq#setup')
       .setDescription(
-        this.client.i18n.t(guildLocale, 'embeds.setup.description')
+        this.client.i18n.t(guildLocale, 'embeds.setup.success_description')
       )
       .setFooter({
         text: this.client.i18n.t(guildLocale, 'embeds.setup.upgrade_footer'),
@@ -97,6 +136,25 @@ export default class SetupCommand implements Command {
           ),
           inline: true,
         }
+      );
+  }
+
+  private buildAlreadyEnabledEmbed(guildLocale: Locale.EnglishGB) {
+    return new EmbedBuilder()
+      .setColor(SecondaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setTitle(
+        this.client.i18n.t(guildLocale, 'embeds.setup.already_enabled_title')
+      )
+      .setURL('https://ollie.gbrlmngr.dev/faq#setup')
+      .setDescription(
+        this.client.i18n.t(
+          guildLocale,
+          'embeds.setup.already_enabled_description'
+        )
       );
   }
 }

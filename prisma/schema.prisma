@@ -17,6 +17,7 @@ model Guild {
   subscriptionId String?  @map("subscription_id")
   ownerId        String   @map("owner_id")
   settings       Json?    @default("{}")
+  registeredBy   String   @map("registered_by")
   registeredAt   DateTime @default(now()) @map("registered_at")
 
   @@map("guilds")

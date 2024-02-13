@@ -9,12 +9,14 @@
       "author": "Ollie, the Penguin",
       "cooldown": {
         "title": "Out of service!",
-        "description": "I might have ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again."
+        "description": "I might've ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again."
       },
       "setup": {
         "upgrade_footer": "Need more? Consider upgrading to another plan.",
-        "title": "You're set up and ready to go!",
-        "description": "The wicked machinery has been enabled on your guild.",
+        "success_title": "You're set up and ready to go!",
+        "already_enabled_title": "You're already set!",
+        "success_description": "The wicked machinery has been enabled for this Community.",
+        "already_enabled_description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else.",
         "inboxes_quota_field": {
           "name": "Available inboxes",
           "value": "{count, number}",

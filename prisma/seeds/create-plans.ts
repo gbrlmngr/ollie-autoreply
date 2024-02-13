@@ -9,9 +9,10 @@ async function run() {
         id: 'PLAN_FREE',
         name: 'Free plan',
         features: {
-          maximumNumberOfInboxes: 10,
+          inboxesQuota: 10,
           useUnlimitedInboxes: false,
-          maximumInboxCapacity: 3,
+          inboxCapacity: 5,
+          useUnlimitedInboxCapacity: false,
         },
       },
     ],
