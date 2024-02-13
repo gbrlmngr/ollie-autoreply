@@ -4,11 +4,12 @@ import { readdir } from 'node:fs/promises';
 import { REST, Routes } from 'discord.js';
 
 import { DISCORD_APPID, DISCORD_TOKEN } from '../environment';
-import { LoggingService } from '../services';
+import { I18NService, LoggingService } from '../services';
 import { Command } from '../commands';
 
 async function run() {
   const logger = new LoggingService();
+  const i18n = new I18NService();
   const RestAPI = new REST().setToken(DISCORD_TOKEN);
   const commands = new Set<Command>();
 
@@ -35,7 +36,10 @@ async function run() {
         )
       ).default;
 
-      const command = new CommandClass() as Command;
+      const command = new CommandClass({
+        logger,
+        i18n,
+      }) as Command;
       if (command.disabled) continue;
 
       commands.add(command);

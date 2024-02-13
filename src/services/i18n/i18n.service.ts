@@ -19,7 +19,7 @@ export class I18NService {
     );
 
     return new MessageFormat(
-      typeof translation === 'string' ? translation : '\uFFFD\uFFFD\uFFFD',
+      typeof translation === 'string' ? translation : '\uFFFD',
       locale
     ).format(translationVars) as string;
   }
