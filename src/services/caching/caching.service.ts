@@ -2,13 +2,14 @@ import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 
-import { PrismaClient } from '../../clients';
+import { PrismaClient, RedisClient } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
-  getGuildQueryCacheKey,
+  getGuildInboxesIdentityKey,
+  getGuildQueryIdentityKey,
 } from './caching.interfaces';
 
 @injectable()
@@ -17,7 +18,8 @@ export class CachingService {
 
   public constructor(
     @inject(DISymbols.LoggingService) private readonly logger: LoggingService,
-    @inject(DISymbols.PrismaClient) private readonly prisma: PrismaClient
+    @inject(DISymbols.PrismaClient) private readonly prisma: PrismaClient,
+    @inject(DISymbols.RedisClient) private readonly redis: RedisClient
   ) {
     this.cache = createCache(
       memoryStore({
@@ -29,12 +31,12 @@ export class CachingService {
 
   public async getGuild(
     guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLs.Guilds
+    cacheTTLSeconds: number = DefaultCacheTTLs.GuildQuery
   ) {
     performance.mark(`${CachingService.name}.getGuild():start`);
 
     const value = await this.cache.wrap(
-      getGuildQueryCacheKey(guildId),
+      getGuildQueryIdentityKey(guildId),
       async () => {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" details from the database...`
@@ -52,6 +54,42 @@ export class CachingService {
       `${CachingService.name}.getGuild()`,
       `${CachingService.name}.getGuild():start`,
       `${CachingService.name}.getGuild():end`
+    );
+
+    return value;
+  }
+
+  public async getGuildInboxes(
+    guildId: string,
+    memberId = '*',
+    cacheTTLSeconds: number = DefaultCacheTTLs.GuildInboxes
+  ) {
+    performance.mark(`${CachingService.name}.getGuildInboxes():start`);
+
+    const value = await this.cache.wrap(
+      getGuildInboxesIdentityKey(guildId, memberId),
+      async () => {
+        this.logger.debug(
+          `📡 Fetching guild "${guildId}" ${
+            memberId === '*' ? 'inboxes' : `inbox for member "${memberId}"`
+          } from the database...`
+        );
+        return (
+          await this.redis.scan(
+            0,
+            'MATCH',
+            getGuildInboxesIdentityKey(guildId, memberId)
+          )
+        )?.[1];
+      },
+      cacheTTLSeconds
+    );
+
+    performance.mark(`${CachingService.name}.getGuildInboxes():end`);
+    performance.measure(
+      `${CachingService.name}.getGuildInboxes()`,
+      `${CachingService.name}.getGuildInboxes():start`,
+      `${CachingService.name}.getGuildInboxes():end`
     );
 
     return value;
