@@ -48,6 +48,10 @@ export default class ChatInputInteractionCreate
       this.client.logger
         .error(`🔴 Unable to run command "${command.constructor.name}".`)
         .error(`🔴 Reason: ${error.message ?? error}`);
+
+      await interaction.editReply({
+        embeds: [this.buildUnknownExceptionEmbed(Locale.EnglishGB)],
+      });
     }
   }
 
@@ -63,6 +67,21 @@ export default class ChatInputInteractionCreate
         this.client.i18n.t(guildLocale, 'embeds.cooldown.description', {
           wait: formatDistanceToNowStrict(Date.now() + waitMs),
         })
+      );
+  }
+
+  private buildUnknownExceptionEmbed(guildLocale: Locale.EnglishGB) {
+    return new EmbedBuilder()
+      .setColor(TernaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setTitle(
+        this.client.i18n.t(guildLocale, 'embeds.unknown_exception.title')
+      )
+      .setDescription(
+        this.client.i18n.t(guildLocale, 'embeds.unknown_exception.description')
       );
   }
 }

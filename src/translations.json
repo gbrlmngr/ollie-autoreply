@@ -11,6 +11,10 @@
         "title": "Out of service!",
         "description": "I might've ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again."
       },
+      "unknown_exception": {
+        "title": "Out of service!",
+        "description": "I might've hit a brick wall or something isn't computing properly.\nCould you try this again?\n\nIf it happens again, I might need to call in the manager..."
+      },
       "setup": {
         "upgrade_footer": "Need more? Consider upgrading to another plan.",
         "success_title": "You're set up and ready to go!",

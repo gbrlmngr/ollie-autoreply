@@ -3,7 +3,6 @@ import Redis from 'ioredis';
 import { EventEmitter } from 'eventemitter3';
 
 import { REDIS_URL } from '../../environment';
-import { LoggingService } from '../../services';
 import { DISymbols } from '../../di.interfaces';
 import { ExpiredKeyEvent } from './redis.interfaces';
 
@@ -14,8 +13,6 @@ export class RedisClient extends Redis {
   private readonly _subscriber: Redis;
 
   public constructor(
-    @inject(DISymbols.LoggingService)
-    private readonly loggingService: LoggingService,
     @inject(DISymbols.EventEmitter) private readonly eventEmitter: EventEmitter
   ) {
     super(REDIS_URL);

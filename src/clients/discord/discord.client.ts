@@ -94,7 +94,7 @@ export class DiscordClient<
         if (listener.disabled) continue;
 
         this.logger.debug(
-          `Registering event handler "${listener.name}" for event "${listener.eventName}"...`
+          `└─ Registering event handler "${listener.name}" for event "${listener.eventName}"...`
         );
         this[listener.once ? 'once' : 'on'](
           listener.eventName,
@@ -154,6 +154,9 @@ export class DiscordClient<
         const command = new CommandClass(this) as Command;
         if (command.disabled) continue;
 
+        this.logger.debug(
+          `└─ Registering command "${command.definition.name}"...`
+        );
         this.commands.set(command.definition.name, command);
       }
     } catch (error) {
