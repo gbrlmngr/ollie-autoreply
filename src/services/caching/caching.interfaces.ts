@@ -8,3 +8,6 @@ export enum DefaultCacheTTLs {
 }
 
 export const DefaultCacheCapacity = 1e4 as const;
+
+export const getGuildQueryCacheKey = (guildId: string) =>
+  `${CachePrefixes.Guilds}${guildId}`;

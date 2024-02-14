@@ -6,9 +6,9 @@ import { PrismaClient } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
 import {
-  CachePrefixes,
   DefaultCacheCapacity,
   DefaultCacheTTLs,
+  getGuildQueryCacheKey,
 } from './caching.interfaces';
 
 @injectable()
@@ -27,14 +27,14 @@ export class CachingService {
     );
   }
 
-  public async fetchGuild(
+  public async getGuild(
     guildId: string,
     cacheTTLSeconds: number = DefaultCacheTTLs.Guilds
   ) {
-    performance.mark(`${CachingService.name}.fetchGuild():start`);
+    performance.mark(`${CachingService.name}.getGuild():start`);
 
     const value = await this.cache.wrap(
-      `${CachePrefixes.Guilds}${guildId}`,
+      getGuildQueryCacheKey(guildId),
       async () => {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" details from the database...`
@@ -47,11 +47,11 @@ export class CachingService {
       cacheTTLSeconds
     );
 
-    performance.mark(`${CachingService.name}.fetchGuild():end`);
+    performance.mark(`${CachingService.name}.getGuild():end`);
     performance.measure(
-      `${CachingService.name}.fetchGuild()`,
-      `${CachingService.name}.fetchGuild():start`,
-      `${CachingService.name}.fetchGuild():end`
+      `${CachingService.name}.getGuild()`,
+      `${CachingService.name}.getGuild():start`,
+      `${CachingService.name}.getGuild():end`
     );
 
     return value;
