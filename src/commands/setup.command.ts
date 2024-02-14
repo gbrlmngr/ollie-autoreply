@@ -41,6 +41,7 @@ export default class SetupCommand implements Command {
     await interaction.deferReply({ ephemeral: true });
 
     try {
+      console.log(await this.client.caches.fetchGuild(guild.id));
       await this.limiter.consume(user.id, 1);
 
       const { plan } = await this.client.prisma.guild.create({

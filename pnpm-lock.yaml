@@ -8,6 +8,9 @@ dependencies:
   '@prisma/client':
     specifier: 5.9.1
     version: 5.9.1(prisma@5.9.1)
+  cache-manager:
+    specifier: ^5.4.0
+    version: 5.4.0
   date-fns:
     specifier: ^3.3.1
     version: 3.3.1
@@ -4126,6 +4129,17 @@ packages:
     engines: { node: '>=8' }
     dev: true
 
+  /cache-manager@5.4.0:
+    resolution:
+      {
+        integrity: sha512-FS7o8vqJosnLpu9rh2gQTo8EOzCRJLF1BJ4XDEUDMqcfvs7SJZs5iuoFTXLauzQ3S5v8sBAST1pCwMaurpyi1A==,
+      }
+    dependencies:
+      lodash.clonedeep: 4.5.0
+      lru-cache: 10.2.0
+      promise-coalesce: 1.1.2
+    dev: false
+
   /call-bind@1.0.6:
     resolution:
       {
@@ -5949,6 +5963,13 @@ packages:
       p-locate: 5.0.0
     dev: true
 
+  /lodash.clonedeep@4.5.0:
+    resolution:
+      {
+        integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==,
+      }
+    dev: false
+
   /lodash.debounce@4.0.8:
     resolution:
       {
@@ -6016,7 +6037,6 @@ packages:
         integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==,
       }
     engines: { node: 14 || >=16.14 }
-    dev: true
 
   /lru-cache@5.1.1:
     resolution:
@@ -6786,6 +6806,14 @@ packages:
         integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==,
       }
     engines: { node: '>= 0.6.0' }
+    dev: false
+
+  /promise-coalesce@1.1.2:
+    resolution:
+      {
+        integrity: sha512-zLaJ9b8hnC564fnJH6NFSOGZYYdzrAJn2JUUIwzoQb32fG2QAakpDNM+CZo1km6keXkRXRM+hml1BFAPVnPkxg==,
+      }
+    engines: { node: '>=16' }
     dev: false
 
   /proxy-from-env@1.1.0:
