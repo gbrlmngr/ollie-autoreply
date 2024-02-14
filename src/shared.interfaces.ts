@@ -11,6 +11,13 @@ export interface PlanFeatures {
 
 export interface GuildSettings {}
 
+export const AbsenceDurationValuesInSeconds = [
+  15 * 60,
+  30 * 60,
+  60 * 60,
+  120 * 60,
+] as const;
+
 export const PrimaryEmbedColor = 0xffa500 as const;
 export const SecondaryEmbedColor = 0x00a5ff as const;
 export const TernaryEmbedColor = 0xfa0000 as const;

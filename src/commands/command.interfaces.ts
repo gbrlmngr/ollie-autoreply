@@ -6,7 +6,7 @@ import type {
 import { RateLimiterAbstract } from 'rate-limiter-flexible';
 
 export interface Command<
-  Definition extends SlashCommandBuilder = SlashCommandBuilder
+  Definition extends Partial<SlashCommandBuilder> = Partial<SlashCommandBuilder>
 > {
   readonly definition: Definition;
   readonly limiter: RateLimiterAbstract;

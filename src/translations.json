@@ -5,7 +5,13 @@
         "description": "Enable Ollie."
       },
       "brb": {
-        "description": "Let the Community know you're not around, for some time."
+        "description": "Let the Community know you're not around, for some time.",
+        "duration_option": {
+          "description": "For how long will you be away?"
+        },
+        "message_option": {
+          "description": "What should I tell others while you're away?"
+        }
       }
     },
     "embeds": {
