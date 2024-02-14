@@ -14,6 +14,11 @@ export interface Command<
   onRun(interaction: CommandInteraction): Awaitable<void>;
 }
 
+export enum CommandInstantiationTypes {
+  Client = 'client',
+  Script = 'script',
+}
+
 export class CommandCooldownException extends Error {
   public constructor(public readonly waitMs: number) {
     super(CommandCooldownException.name);

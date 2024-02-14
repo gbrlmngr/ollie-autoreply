@@ -16,7 +16,11 @@ import {
   SecondaryEmbedColor,
 } from '../shared.interfaces';
 import { NODE_ENV } from '../environment';
-import { Command, CommandCooldownException } from './command.interfaces';
+import {
+  Command,
+  CommandCooldownException,
+  CommandInstantiationTypes,
+} from './command.interfaces';
 
 export default class SetupCommand implements Command {
   public readonly limiter: RateLimiterAbstract;
@@ -28,12 +32,17 @@ export default class SetupCommand implements Command {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false);
 
-  public constructor(private readonly client: DiscordClient) {
-    this.limiter = client.rlr({
-      storeClient: client.redis,
-      points: NODE_ENV === 'development' ? 600 : 1,
-      duration: 60,
-    });
+  public constructor(
+    private readonly client: DiscordClient,
+    instantiationType: CommandInstantiationTypes
+  ) {
+    if (instantiationType === CommandInstantiationTypes.Client) {
+      this.limiter = client.rlr({
+        storeClient: client.redis,
+        points: NODE_ENV === 'development' ? 600 : 1,
+        duration: 60,
+      });
+    }
   }
 
   public async onRun(interaction: CommandInteraction) {

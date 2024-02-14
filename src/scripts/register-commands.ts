@@ -5,7 +5,7 @@ import { REST, Routes } from 'discord.js';
 
 import { DISCORD_APPID, DISCORD_TOKEN } from '../environment';
 import { I18NService, LoggingService } from '../services';
-import { Command } from '../commands';
+import { Command, CommandInstantiationTypes } from '../commands';
 
 async function run() {
   const logger = new LoggingService();
@@ -36,10 +36,12 @@ async function run() {
         )
       ).default;
 
-      const command = new CommandClass({
-        logger,
-        i18n,
-      }) as Command;
+      const command = new CommandClass(
+        {
+          i18n,
+        },
+        CommandInstantiationTypes.Script
+      ) as Command;
       if (command.disabled) continue;
 
       commands.add(command);

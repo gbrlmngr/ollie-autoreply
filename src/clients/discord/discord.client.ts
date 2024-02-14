@@ -19,6 +19,7 @@ import { Listener } from '../../listeners';
 import {
   Command,
   CommandCooldownException,
+  CommandInstantiationTypes,
   CommandNotAllowedException,
 } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
@@ -151,7 +152,10 @@ export class DiscordClient<
           })
         ).default;
 
-        const command = new CommandClass(this) as Command;
+        const command = new CommandClass(
+          this,
+          CommandInstantiationTypes.Client
+        ) as Command;
         if (command.disabled) continue;
 
         this.logger.debug(

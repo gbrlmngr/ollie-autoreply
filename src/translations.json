@@ -2,7 +2,10 @@
   "en-GB": {
     "commands": {
       "setup": {
-        "description": "Enable Ollie"
+        "description": "Enable Ollie."
+      },
+      "brb": {
+        "description": "Let the Community know you're not around, for some time."
       }
     },
     "embeds": {
