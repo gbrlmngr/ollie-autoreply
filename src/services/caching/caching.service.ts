@@ -4,7 +4,11 @@ import { Cache, createCache, memoryStore } from 'cache-manager';
 
 import { PrismaClient } from '../../clients';
 import { LoggingService } from '../logging';
-import { CachePrefixes, DefaultCacheTTLs } from './caching.interfaces';
+import {
+  CachePrefixes,
+  DefaultCacheCapacity,
+  DefaultCacheTTLs,
+} from './caching.interfaces';
 
 @injectable()
 export class CachingService {
@@ -14,7 +18,12 @@ export class CachingService {
     @inject(LoggingService) private readonly logger: LoggingService,
     @inject(PrismaClient) private readonly prisma: PrismaClient
   ) {
-    this.cache = createCache(memoryStore({ ttl: 0, max: 1e4 }));
+    this.cache = createCache(
+      memoryStore({
+        ttl: DefaultCacheTTLs.MaximumGlobal,
+        max: DefaultCacheCapacity,
+      })
+    );
   }
 
   public async fetchGuild(
@@ -27,7 +36,7 @@ export class CachingService {
       `${CachePrefixes.Guilds}${guildId}`,
       async () => {
         this.logger.debug(
-          `Fetching guild's "${guildId}" details from the database...`
+          `📡 Fetching guild "${guildId}" details from the database...`
         );
         return await this.prisma.guild.findUnique({
           where: { id: guildId },

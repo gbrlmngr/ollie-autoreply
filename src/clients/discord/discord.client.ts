@@ -43,7 +43,7 @@ export class DiscordClient<
     @inject(EventEmitter) public readonly ee: EventEmitter,
     @inject(LoggingService) public readonly logger: LoggingService,
     @inject(I18NService) public readonly i18n: I18NService,
-    @inject(DISymbols.CachingService) public readonly caches: CachingService,
+    @inject(DISymbols.CachingService) public readonly cache: CachingService,
     @inject(RedisClient) public readonly redis: RedisClient,
     @inject(PrismaClient) public readonly prisma: PrismaClient,
     @inject(`Factory<${RateLimiterRedis.name}>`)
