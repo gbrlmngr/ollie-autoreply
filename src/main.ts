@@ -18,15 +18,13 @@ async function main() {
     skipBaseClassChecks: true,
     defaultScope: 'Singleton',
   });
-  DIContainer.bind<EventEmitter>(EventEmitter).toSelf();
-  DIContainer.bind<DiscordClient>(DiscordClient).toSelf();
-  DIContainer.bind<RedisClient>(RedisClient).toSelf();
-  DIContainer.bind<PrismaClient>(PrismaClient).toSelf();
-  DIContainer.bind<LoggingService>(LoggingService).toSelf();
-  DIContainer.bind<I18NService>(I18NService).toSelf();
-  DIContainer.bind<CachingService>(DISymbols.CachingService)
-    .to(CachingService)
-    .inSingletonScope();
+  DIContainer.bind<EventEmitter>(DISymbols.EventEmitter).to(EventEmitter);
+  DIContainer.bind<DiscordClient>(DISymbols.DiscordClient).to(DiscordClient);
+  DIContainer.bind<RedisClient>(DISymbols.RedisClient).to(RedisClient);
+  DIContainer.bind<PrismaClient>(DISymbols.PrismaClient).to(PrismaClient);
+  DIContainer.bind<LoggingService>(DISymbols.LoggingService).to(LoggingService);
+  DIContainer.bind<I18NService>(DISymbols.I18NService).to(I18NService);
+  DIContainer.bind<CachingService>(DISymbols.CachingService).to(CachingService);
 
   DIContainer.bind<(options: IRateLimiterRedisOptions) => RateLimiterRedis>(
     `Factory<${RateLimiterRedis.name}>`
@@ -38,7 +36,9 @@ async function main() {
       })
   );
 
-  await DIContainer.get<DiscordClient>(DiscordClient).login(DISCORD_TOKEN);
+  await DIContainer.get<DiscordClient>(DISymbols.DiscordClient).login(
+    DISCORD_TOKEN
+  );
 }
 
 main().catch((error) => {

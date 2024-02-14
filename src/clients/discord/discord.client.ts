@@ -40,12 +40,12 @@ export class DiscordClient<
     });
 
   public constructor(
-    @inject(EventEmitter) public readonly ee: EventEmitter,
-    @inject(LoggingService) public readonly logger: LoggingService,
-    @inject(I18NService) public readonly i18n: I18NService,
+    @inject(DISymbols.EventEmitter) public readonly ee: EventEmitter,
+    @inject(DISymbols.LoggingService) public readonly logger: LoggingService,
+    @inject(DISymbols.I18NService) public readonly i18n: I18NService,
     @inject(DISymbols.CachingService) public readonly cache: CachingService,
-    @inject(RedisClient) public readonly redis: RedisClient,
-    @inject(PrismaClient) public readonly prisma: PrismaClient,
+    @inject(DISymbols.RedisClient) public readonly redis: RedisClient,
+    @inject(DISymbols.PrismaClient) public readonly prisma: PrismaClient,
     @inject(`Factory<${RateLimiterRedis.name}>`)
     public readonly rlr: (options: IRateLimiterRedisOptions) => RateLimiterRedis
   ) {

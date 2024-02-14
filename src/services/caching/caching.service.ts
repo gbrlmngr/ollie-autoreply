@@ -4,6 +4,7 @@ import { Cache, createCache, memoryStore } from 'cache-manager';
 
 import { PrismaClient } from '../../clients';
 import { LoggingService } from '../logging';
+import { DISymbols } from '../../di.interfaces';
 import {
   CachePrefixes,
   DefaultCacheCapacity,
@@ -15,8 +16,8 @@ export class CachingService {
   private readonly cache: Cache;
 
   public constructor(
-    @inject(LoggingService) private readonly logger: LoggingService,
-    @inject(PrismaClient) private readonly prisma: PrismaClient
+    @inject(DISymbols.LoggingService) private readonly logger: LoggingService,
+    @inject(DISymbols.PrismaClient) private readonly prisma: PrismaClient
   ) {
     this.cache = createCache(
       memoryStore({
@@ -28,7 +29,7 @@ export class CachingService {
 
   public async fetchGuild(
     guildId: string,
-    cacheTTLSeconds = DefaultCacheTTLs.Guilds
+    cacheTTLSeconds: number = DefaultCacheTTLs.Guilds
   ) {
     performance.mark(`${CachingService.name}.fetchGuild():start`);
 
