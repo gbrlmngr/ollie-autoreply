@@ -15,3 +15,5 @@ export const getGuildQueryIdentityKey = (guildId: string) =>
   `${IdentityPrefixes.GuildQuery}${guildId}`;
 export const getGuildAbsencesIdentityKey = (guildId: string) =>
   `${IdentityPrefixes.GuildAbsences}${guildId}`;
+export const getGuildAbsenceIdentityKey = (guildId: string, userId: string) =>
+  `${IdentityPrefixes.GuildAbsences}${guildId}/${userId}`;

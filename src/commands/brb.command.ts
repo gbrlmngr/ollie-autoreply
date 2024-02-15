@@ -4,8 +4,10 @@ import {
   CommandInteraction,
   Locale,
   SlashCommandBuilder,
+  userMention,
 } from 'discord.js';
 import { default as ms } from 'ms';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 import { DiscordClient } from '../clients';
 import { NODE_ENV } from '../environment';
@@ -23,6 +25,7 @@ export default class BrbCommand implements Command {
     .setDescription(
       this.client.i18n.t(Locale.EnglishGB, 'commands.brb.description')
     )
+    .setDMPermission(false)
     .addIntegerOption((option) =>
       option
         .setName('duration')
@@ -41,17 +44,6 @@ export default class BrbCommand implements Command {
           }))
         )
         .setRequired(true)
-    )
-    .addStringOption((option) =>
-      option
-        .setName('message')
-        .setDescription(
-          this.client.i18n.t(
-            Locale.EnglishGB,
-            'commands.brb.message_option.description'
-          )
-        )
-        .setMaxLength(128)
     );
 
   public constructor(
@@ -68,9 +60,27 @@ export default class BrbCommand implements Command {
   }
 
   public async onRun(interaction: CommandInteraction) {
+    const { guild, user, options } = interaction;
     await interaction.deferReply({ ephemeral: true });
+
+    const duration = Number(options.get('duration', true)?.value);
+    await this.client.activities.createAbsence(
+      guild,
+      user,
+      Number.isNaN(duration) ? 0 : duration
+    );
+
     await interaction.editReply(
       this.client.i18n.t(Locale.EnglishGB, 'commands.brb.description')
     );
+
+    await interaction.followUp({
+      content: `${userMention(
+        user.id
+      )} will be gone for ${formatDistanceToNowStrict(
+        Date.now() + duration * 1e3
+      )}.`,
+      ephemeral: false,
+    });
   }
 }

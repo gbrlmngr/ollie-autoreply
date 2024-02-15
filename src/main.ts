@@ -33,7 +33,7 @@ async function main() {
   ).toFactory<RateLimiterRedis>(
     () => (options: IRateLimiterRedisOptions) =>
       new RateLimiterRedis({
-        keyPrefix: 'ollie/rl',
+        keyPrefix: 'ollie-limiter',
         ...options,
       })
   );

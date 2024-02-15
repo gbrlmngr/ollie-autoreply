@@ -10,6 +10,7 @@ import { GuildSettings, PlanIDs } from '../../shared.interfaces';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
+  getGuildAbsenceIdentityKey,
   getGuildAbsencesIdentityKey,
   getGuildQueryIdentityKey,
 } from './activities.interfaces';
@@ -73,13 +74,13 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" absences from the database...`
         );
-        return (
-          await this.redis.scan(
-            0,
-            'MATCH',
-            `${getGuildAbsencesIdentityKey(guildId)}/*`
-          )
-        )?.[1];
+        return await this.redis.scan(
+          0,
+          'MATCH',
+          `${getGuildAbsencesIdentityKey(guildId)}/*`,
+          'COUNT',
+          50
+        );
       },
       cacheTTLSeconds
     );
@@ -113,9 +114,7 @@ export class ActivitiesService {
       .catch(async (error) => {
         /* Reference: https://www.prisma.io/docs/orm/reference/error-reference#p2002 */
         if (error?.code !== 'P2002') {
-          this.logger.debug(
-            `🔴 Unable to create a new guild for Guild "${guild.id}".`
-          );
+          this.logger.debug(`🔴 Unable to create a guild "${guild.id}".`);
           this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
           this.logger.debug(
             `└─ Deleting cache for "${getGuildQueryIdentityKey(guild.id)}"`
@@ -136,5 +135,44 @@ export class ActivitiesService {
     );
 
     return result;
+  }
+
+  public async createAbsence(guild: Guild, user: User, duration: number) {
+    performance.mark(`${ActivitiesService.name}.createAbsence():start`);
+
+    const [[setError, setResult], [expiryError, expiryResult]] =
+      await this.redis
+        .multi()
+        .set(
+          getGuildAbsenceIdentityKey(guild.id, user.id),
+          Date.now().toString()
+        )
+        .expire(getGuildAbsenceIdentityKey(guild.id, user.id), duration)
+        .exec();
+
+    if (setError || expiryError) {
+      this.logger.debug(
+        `🔴 Unable to create absence for user "${user.id}" in guild "${guild.id}".`
+      );
+      this.logger.debug(
+        `└─ Reason: ${
+          (setError || expiryError)?.message ?? (setError || expiryError)
+        }`
+      );
+    }
+
+    await Promise.all([
+      this.cache.del(getGuildAbsencesIdentityKey(guild.id)),
+      this.cache.del(getGuildAbsenceIdentityKey(guild.id, user.id)),
+    ]);
+
+    performance.mark(`${ActivitiesService.name}.createAbsence():end`);
+    performance.measure(
+      `${ActivitiesService.name}.createAbsence()`,
+      `${ActivitiesService.name}.createAbsence():start`,
+      `${ActivitiesService.name}.createAbsence():end`
+    );
+
+    return Boolean(setResult && expiryResult);
   }
 }
