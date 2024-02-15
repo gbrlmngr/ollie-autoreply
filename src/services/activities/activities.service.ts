@@ -6,13 +6,15 @@ import { Guild, User } from 'discord.js';
 import { PrismaClient, RedisClient } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
-import { GuildSettings, PlanIDs } from '../../shared.interfaces';
+import { GuildSettings, PlanFeatures, PlanIDs } from '../../shared.interfaces';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
-  getGuildAbsenceIdentityKey,
+  getGuildMemberAbsenceIdentityKey,
   getGuildAbsencesIdentityKey,
   getGuildQueryIdentityKey,
+  getGuildInboxesIdentityKey,
+  getGuildMemberInboxIdentityKey,
 } from './activities.interfaces';
 
 @injectable()
@@ -95,6 +97,39 @@ export class ActivitiesService {
     return value;
   }
 
+  public async getGuildInboxes(
+    guildId: string,
+    cacheTTLSeconds: number = DefaultCacheTTLs.GuildInboxes
+  ) {
+    performance.mark(`${ActivitiesService.name}.getGuildInboxes():start`);
+
+    const value = await this.cache.wrap(
+      getGuildInboxesIdentityKey(guildId),
+      async () => {
+        this.logger.debug(
+          `📡 Fetching guild "${guildId}" inboxes from the database...`
+        );
+        return await this.redis.scan(
+          0,
+          'MATCH',
+          `${getGuildInboxesIdentityKey(guildId)}/*`,
+          'COUNT',
+          1000
+        );
+      },
+      cacheTTLSeconds
+    );
+
+    performance.mark(`${ActivitiesService.name}.getGuildInboxes():end`);
+    performance.measure(
+      `${ActivitiesService.name}.getGuildInboxes()`,
+      `${ActivitiesService.name}.getGuildInboxes():start`,
+      `${ActivitiesService.name}.getGuildInboxes():end`
+    );
+
+    return value;
+  }
+
   public async createGuild(guild: Guild, initiator: User) {
     performance.mark(`${ActivitiesService.name}.createGuild():start`);
 
@@ -114,7 +149,9 @@ export class ActivitiesService {
       .catch(async (error) => {
         /* Reference: https://www.prisma.io/docs/orm/reference/error-reference#p2002 */
         if (error?.code !== 'P2002') {
-          this.logger.debug(`🔴 Unable to create a guild "${guild.id}".`);
+          this.logger.debug(
+            `🔴 Encountered issues when creating a guild "${guild.id}".`
+          );
           this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
           this.logger.debug(
             `└─ Deleting cache for "${getGuildQueryIdentityKey(guild.id)}"`
@@ -144,15 +181,15 @@ export class ActivitiesService {
       await this.redis
         .multi()
         .set(
-          getGuildAbsenceIdentityKey(guild.id, user.id),
+          getGuildMemberAbsenceIdentityKey(guild.id, user.id),
           Date.now().toString()
         )
-        .expire(getGuildAbsenceIdentityKey(guild.id, user.id), duration)
+        .expire(getGuildMemberAbsenceIdentityKey(guild.id, user.id), duration)
         .exec();
 
     if (setError || expiryError) {
       this.logger.debug(
-        `🔴 Unable to create absence for user "${user.id}" in guild "${guild.id}".`
+        `🔴 Encountered issues when creating absence for user "${user.id}" in guild "${guild.id}".`
       );
       this.logger.debug(
         `└─ Reason: ${
@@ -163,7 +200,7 @@ export class ActivitiesService {
 
     await Promise.all([
       this.cache.del(getGuildAbsencesIdentityKey(guild.id)),
-      this.cache.del(getGuildAbsenceIdentityKey(guild.id, user.id)),
+      this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
     ]);
 
     performance.mark(`${ActivitiesService.name}.createAbsence():end`);
@@ -171,6 +208,47 @@ export class ActivitiesService {
       `${ActivitiesService.name}.createAbsence()`,
       `${ActivitiesService.name}.createAbsence():start`,
       `${ActivitiesService.name}.createAbsence():end`
+    );
+
+    return Boolean(setResult && expiryResult);
+  }
+
+  public async createInbox(guild: Guild, user: User, duration: number) {
+    performance.mark(`${ActivitiesService.name}.createInbox():start`);
+
+    const [{ plan }, [, inboxes]] = await Promise.all([
+      this.getGuild(guild.id),
+      this.getGuildInboxes(guild.id),
+    ]);
+
+    const { inboxesQuota, useUnlimitedInboxes } = (plan?.features ??
+      {}) as unknown as PlanFeatures;
+
+    if (!useUnlimitedInboxes && inboxes.length >= inboxesQuota) return false;
+
+    const [[setError, setResult], [expiryError, expiryResult]] =
+      await this.redis
+        .multi()
+        .set(getGuildMemberInboxIdentityKey(guild.id, user.id), '')
+        .expire(getGuildMemberInboxIdentityKey(guild.id, user.id), duration)
+        .exec();
+
+    if (setError || expiryError) {
+      this.logger.debug(
+        `🔴 Encountered issues when creating inbox for user "${user.id}" in guild "${guild.id}".`
+      );
+      this.logger.debug(
+        `└─ Reason: ${
+          (setError || expiryError)?.message ?? (setError || expiryError)
+        }`
+      );
+    }
+
+    performance.mark(`${ActivitiesService.name}.createInbox():end`);
+    performance.measure(
+      `${ActivitiesService.name}.createInbox()`,
+      `${ActivitiesService.name}.createInbox():start`,
+      `${ActivitiesService.name}.createInbox():end`
     );
 
     return Boolean(setResult && expiryResult);

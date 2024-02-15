@@ -64,23 +64,33 @@ export default class BrbCommand implements Command {
     await interaction.deferReply({ ephemeral: true });
 
     const duration = Number(options.get('duration', true)?.value);
-    await this.client.activities.createAbsence(
-      guild,
-      user,
-      Number.isNaN(duration) ? 0 : duration
-    );
+
+    const [isAbsenceCreated, isInboxCreated] = await Promise.all([
+      this.client.activities.createAbsence(
+        guild,
+        user,
+        Number.isNaN(duration) ? 0 : duration
+      ),
+      this.client.activities.createInbox(
+        guild,
+        user,
+        Number.isNaN(duration) ? 0 : duration
+      ),
+    ]);
 
     await interaction.editReply(
       this.client.i18n.t(Locale.EnglishGB, 'commands.brb.description')
     );
 
-    await interaction.followUp({
-      content: `${userMention(
-        user.id
-      )} will be gone for ${formatDistanceToNowStrict(
-        Date.now() + duration * 1e3
-      )}.`,
-      ephemeral: false,
-    });
+    if (isAbsenceCreated) {
+      await interaction.followUp({
+        content: `${isInboxCreated ? 'HAS INBOX!' : ''}${userMention(
+          user.id
+        )} will be gone for ${formatDistanceToNowStrict(
+          Date.now() + duration * 1e3
+        )}.`,
+        ephemeral: false,
+      });
+    }
   }
 }
