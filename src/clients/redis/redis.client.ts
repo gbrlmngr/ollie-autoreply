@@ -4,7 +4,11 @@ import { EventEmitter } from 'eventemitter3';
 
 import { REDIS_URL } from '../../environment';
 import { DISymbols } from '../../di.interfaces';
-import { ExpiredKeyEvent } from './redis.interfaces';
+import {
+  DeletedKeyEvent,
+  ExpiredKeyEvent,
+  RemovedKeyEvent,
+} from './redis.interfaces';
 
 decorate(injectable(), Redis);
 
@@ -20,17 +24,19 @@ export class RedisClient extends Redis {
 
     this._subscriber = new Redis(REDIS_URL);
     this._subscriber.subscribe(ExpiredKeyEvent);
+    this._subscriber.subscribe(DeletedKeyEvent);
     this._subscriber.on('message', this._onMessageEvent.bind(this));
   }
 
   private _onReadyEvent() {
-    this.config('SET', 'notify-keyspace-events', 'Ex');
+    this.config('SET', 'notify-keyspace-events', 'Egx');
   }
 
   private async _onMessageEvent(channel: string, message: string) {
     switch (channel) {
       case ExpiredKeyEvent:
-        this.eventEmitter.emit(ExpiredKeyEvent, message);
+      case DeletedKeyEvent:
+        this.eventEmitter.emit(RemovedKeyEvent, message);
         return;
 
       default:
