@@ -8,12 +8,12 @@ import { DISymbols } from '../../di.interfaces';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
-  getGuildInboxesIdentityKey,
+  getGuildAbsencesIdentityKey,
   getGuildQueryIdentityKey,
-} from './caching.interfaces';
+} from './activities.interfaces';
 
 @injectable()
-export class CachingService {
+export class ActivitiesService {
   private readonly cache: Cache;
 
   public constructor(
@@ -33,7 +33,7 @@ export class CachingService {
     guildId: string,
     cacheTTLSeconds: number = DefaultCacheTTLs.GuildQuery
   ) {
-    performance.mark(`${CachingService.name}.getGuild():start`);
+    performance.mark(`${ActivitiesService.name}.getGuild():start`);
 
     const value = await this.cache.wrap(
       getGuildQueryIdentityKey(guildId),
@@ -49,47 +49,44 @@ export class CachingService {
       cacheTTLSeconds
     );
 
-    performance.mark(`${CachingService.name}.getGuild():end`);
+    performance.mark(`${ActivitiesService.name}.getGuild():end`);
     performance.measure(
-      `${CachingService.name}.getGuild()`,
-      `${CachingService.name}.getGuild():start`,
-      `${CachingService.name}.getGuild():end`
+      `${ActivitiesService.name}.getGuild()`,
+      `${ActivitiesService.name}.getGuild():start`,
+      `${ActivitiesService.name}.getGuild():end`
     );
 
     return value;
   }
 
-  public async getGuildInboxes(
+  public async getGuildAbsences(
     guildId: string,
-    memberId = '*',
-    cacheTTLSeconds: number = DefaultCacheTTLs.GuildInboxes
+    cacheTTLSeconds: number = DefaultCacheTTLs.GuildAbsences
   ) {
-    performance.mark(`${CachingService.name}.getGuildInboxes():start`);
+    performance.mark(`${ActivitiesService.name}.getGuildAbsences():start`);
 
     const value = await this.cache.wrap(
-      getGuildInboxesIdentityKey(guildId, memberId),
+      getGuildAbsencesIdentityKey(guildId),
       async () => {
         this.logger.debug(
-          `📡 Fetching guild "${guildId}" ${
-            memberId === '*' ? 'inboxes' : `inbox for member "${memberId}"`
-          } from the database...`
+          `📡 Fetching guild "${guildId}" absences from the database...`
         );
         return (
           await this.redis.scan(
             0,
             'MATCH',
-            getGuildInboxesIdentityKey(guildId, memberId)
+            `${getGuildAbsencesIdentityKey(guildId)}/*`
           )
         )?.[1];
       },
       cacheTTLSeconds
     );
 
-    performance.mark(`${CachingService.name}.getGuildInboxes():end`);
+    performance.mark(`${ActivitiesService.name}.getGuildAbsences():end`);
     performance.measure(
-      `${CachingService.name}.getGuildInboxes()`,
-      `${CachingService.name}.getGuildInboxes():start`,
-      `${CachingService.name}.getGuildInboxes():end`
+      `${ActivitiesService.name}.getGuildAbsences()`,
+      `${ActivitiesService.name}.getGuildAbsences():start`,
+      `${ActivitiesService.name}.getGuildAbsences():end`
     );
 
     return value;

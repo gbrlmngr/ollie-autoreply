@@ -10,7 +10,11 @@ import { default as ms } from 'ms';
 import { DiscordClient } from '../clients';
 import { NODE_ENV } from '../environment';
 import { AbsenceDurationValuesInSeconds } from '../shared.interfaces';
-import { Command, CommandInstantiationTypes } from './command.interfaces';
+import {
+  Command,
+  CommandCooldownPointPerSeconds,
+  CommandInstantiationTypes,
+} from './command.interfaces';
 
 export default class BrbCommand implements Command {
   public readonly limiter: RateLimiterAbstract;
@@ -58,7 +62,7 @@ export default class BrbCommand implements Command {
       this.limiter = client.rlr({
         storeClient: client.redis,
         points: NODE_ENV === 'development' ? 300 : 1,
-        duration: 30,
+        duration: CommandCooldownPointPerSeconds.Brb,
       });
     }
   }

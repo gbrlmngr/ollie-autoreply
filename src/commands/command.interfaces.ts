@@ -19,6 +19,11 @@ export enum CommandInstantiationTypes {
   Script = 'script',
 }
 
+export enum CommandCooldownPointPerSeconds {
+  Setup = 60,
+  Brb = 30,
+}
+
 export class CommandCooldownException extends Error {
   public constructor(public readonly waitMs: number) {
     super(CommandCooldownException.name);

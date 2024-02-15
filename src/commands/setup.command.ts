@@ -19,6 +19,7 @@ import { NODE_ENV } from '../environment';
 import {
   Command,
   CommandCooldownException,
+  CommandCooldownPointPerSeconds,
   CommandInstantiationTypes,
 } from './command.interfaces';
 
@@ -40,7 +41,7 @@ export default class SetupCommand implements Command {
       this.limiter = client.rlr({
         storeClient: client.redis,
         points: NODE_ENV === 'development' ? 600 : 1,
-        duration: 60,
+        duration: CommandCooldownPointPerSeconds.Setup,
       });
     }
   }
