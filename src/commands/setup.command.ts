@@ -56,7 +56,7 @@ export default class SetupCommand implements Command {
 
       await interaction.editReply({
         embeds: [
-          this.buildSuccessfulSetupEmbed(
+          this.createSetupCompletedSuccessfulEmbed(
             Locale.EnglishGB,
             planFeatures.useUnlimitedInboxes
               ? -1
@@ -70,7 +70,7 @@ export default class SetupCommand implements Command {
     } catch (error) {
       if (error?.code === 'P2002') {
         await interaction.editReply({
-          embeds: [this.buildAlreadyEnabledEmbed(Locale.EnglishGB)],
+          embeds: [this.createSetupPreviouslyCompletedEmbed(Locale.EnglishGB)],
         });
         return;
       }
@@ -84,7 +84,7 @@ export default class SetupCommand implements Command {
     }
   }
 
-  private buildSuccessfulSetupEmbed(
+  private createSetupCompletedSuccessfulEmbed(
     guildLocale: Locale.EnglishGB,
     inboxesQuota: number,
     inboxCapacity: number
@@ -95,10 +95,18 @@ export default class SetupCommand implements Command {
         name: this.client.i18n.t(guildLocale, 'embeds.author'),
         iconURL: EmbedAuthorIconUrl,
       })
-      .setTitle(this.client.i18n.t(guildLocale, 'embeds.setup.success_title'))
-      .setURL('https://ollie.gbrlmngr.dev/faq#setup')
+      .setTitle(
+        this.client.i18n.t(
+          guildLocale,
+          'embeds.setup.completed_successful.title'
+        )
+      )
+      .setURL('https://ollie.gbrlmngr.dev')
       .setDescription(
-        this.client.i18n.t(guildLocale, 'embeds.setup.success_description')
+        this.client.i18n.t(
+          guildLocale,
+          'embeds.setup.completed_successful.description'
+        )
       )
       .setFooter({
         text: this.client.i18n.t(guildLocale, 'embeds.setup.upgrade_footer'),
@@ -135,7 +143,7 @@ export default class SetupCommand implements Command {
       );
   }
 
-  private buildAlreadyEnabledEmbed(guildLocale: Locale.EnglishGB) {
+  private createSetupPreviouslyCompletedEmbed(guildLocale: Locale.EnglishGB) {
     return new EmbedBuilder()
       .setColor(SecondaryEmbedColor)
       .setAuthor({
@@ -143,13 +151,16 @@ export default class SetupCommand implements Command {
         iconURL: EmbedAuthorIconUrl,
       })
       .setTitle(
-        this.client.i18n.t(guildLocale, 'embeds.setup.already_enabled_title')
+        this.client.i18n.t(
+          guildLocale,
+          'embeds.setup.previously_completed.title'
+        )
       )
-      .setURL('https://ollie.gbrlmngr.dev/faq#setup')
+      .setURL('https://ollie.gbrlmngr.dev')
       .setDescription(
         this.client.i18n.t(
           guildLocale,
-          'embeds.setup.already_enabled_description'
+          'embeds.setup.previously_completed.description'
         )
       );
   }

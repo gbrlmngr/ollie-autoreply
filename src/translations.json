@@ -22,11 +22,15 @@
         "description": "I might've hit a brick wall or something isn't computing properly.\nCould you try this again?\n\nIf it happens again, I might need to call in the manager..."
       },
       "setup": {
-        "upgrade_footer": "Need more? Consider upgrading to another plan.",
-        "success_title": "You're set up and ready to go!",
-        "already_enabled_title": "You're already set!",
-        "success_description": "The wicked machinery has been enabled for this Community.",
-        "already_enabled_description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else.",
+        "completed_successful": {
+          "title": "You're set up and ready to go!",
+          "description": "The wicked machinery has been enabled for this Community."
+        },
+        "previously_completed": {
+          "title": "You're already set!",
+          "description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else."
+        },
+        "upgrade_footer": "Need more? Upgrade your plan on the Dashboard.",
         "inboxes_quota_field": {
           "name": "Available inboxes",
           "value": "{count, number}",
@@ -36,6 +40,13 @@
           "name": "Capacity per inbox",
           "value": "{count, plural, =1 {# message} other {# messages}}",
           "infinite_value": "∞ messages"
+        }
+      },
+      "brb": {
+        "user_gone": {
+          "title": "Missing for a bit",
+          "description_with_inbox": "{user} will be gone for **~{duration}**, but they'll have their inbox open.",
+          "description_without_inbox": "{user} will be gone for **~{duration}**."
         }
       }
     }

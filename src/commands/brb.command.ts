@@ -2,6 +2,7 @@ import { RateLimiterAbstract } from 'rate-limiter-flexible';
 import {
   APIApplicationCommandOptionChoice,
   CommandInteraction,
+  EmbedBuilder,
   Locale,
   SlashCommandBuilder,
   userMention,
@@ -11,7 +12,11 @@ import { formatDistanceToNowStrict } from 'date-fns';
 
 import { DiscordClient } from '../clients';
 import { NODE_ENV } from '../environment';
-import { AbsenceDurationValuesInSeconds } from '../shared.interfaces';
+import {
+  AbsenceDurationValuesInSeconds,
+  EmbedAuthorIconUrl,
+  PrimaryEmbedColor,
+} from '../shared.interfaces';
 import {
   Command,
   CommandCooldownPointPerSeconds,
@@ -61,10 +66,9 @@ export default class BrbCommand implements Command {
 
   public async onRun(interaction: CommandInteraction) {
     const { guild, user, options } = interaction;
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
 
     const duration = Number(options.get('duration', true)?.value);
-
     const [isAbsenceCreated, isInboxCreated] = await Promise.all([
       this.client.activities.createAbsence(
         guild,
@@ -78,19 +82,45 @@ export default class BrbCommand implements Command {
       ),
     ]);
 
-    await interaction.editReply(
-      this.client.i18n.t(Locale.EnglishGB, 'commands.brb.description')
-    );
-
     if (isAbsenceCreated) {
-      await interaction.followUp({
-        content: `${isInboxCreated ? 'HAS INBOX!' : ''}${userMention(
-          user.id
-        )} will be gone for ${formatDistanceToNowStrict(
-          Date.now() + duration * 1e3
-        )}.`,
-        ephemeral: false,
+      await interaction.editReply({
+        embeds: [
+          this.createUserGoneEmbed(
+            Locale.EnglishGB,
+            user.id,
+            duration,
+            isInboxCreated
+          ),
+        ],
       });
     }
+  }
+
+  private createUserGoneEmbed(
+    guildLocale: Locale.EnglishGB,
+    userId: string,
+    duration: number,
+    isInboxCreated: boolean
+  ) {
+    return new EmbedBuilder()
+      .setColor(PrimaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.brb.user_gone.title'))
+      .setURL('https://ollie.gbrlmngr.dev')
+      .setDescription(
+        this.client.i18n.t(
+          guildLocale,
+          isInboxCreated
+            ? 'embeds.brb.user_gone.description_with_inbox'
+            : 'embeds.brb.user_gone.description_without_inbox',
+          {
+            user: userMention(userId),
+            duration: formatDistanceToNowStrict(Date.now() + duration * 1e3),
+          }
+        )
+      );
   }
 }
