@@ -31,7 +31,7 @@ async function run() {
           (error) => {
             logger
               .error(`🔴 Unable to import command "${commandFile}"`)
-              .error(`🔴 Reason: ${error.message ?? error}`);
+              .error(`└─ Reason: ${error.message ?? error}`);
           }
         )
       ).default;
@@ -59,7 +59,7 @@ async function run() {
   } catch (error) {
     logger
       .error('🔴 Unable to register the commands.')
-      .error(`🔴 Reason: ${error.message ?? error}`);
+      .error(`└─ Reason: ${error.message ?? error}`);
   }
 }
 

@@ -47,7 +47,7 @@ export default class ChatInputInteractionCreate
 
       this.client.logger
         .error(`🔴 Unable to run command "${command.constructor.name}".`)
-        .error(`🔴 Reason: ${error.message ?? error}`);
+        .error(`└─ Reason: ${error.message ?? error}`);
 
       await interaction.editReply({
         embeds: [this.buildUnknownExceptionEmbed(Locale.EnglishGB)],

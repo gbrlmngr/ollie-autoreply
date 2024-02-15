@@ -10,9 +10,7 @@ import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 import { DiscordClient } from '../clients';
 import {
   EmbedAuthorIconUrl,
-  GuildSettings,
   PlanFeatures,
-  PlanIDs,
   SecondaryEmbedColor,
 } from '../shared.interfaces';
 import { NODE_ENV } from '../environment';
@@ -53,19 +51,7 @@ export default class SetupCommand implements Command {
     try {
       await this.limiter.consume(user.id, 1);
 
-      const { plan } = await this.client.prisma.guild.create({
-        data: {
-          id: guild.id,
-          ownerId: guild.ownerId,
-          planId: PlanIDs.Free,
-          subscriptionId: null,
-          settings: {} as GuildSettings,
-          registeredBy: user.id,
-          registeredAt: new Date(),
-        },
-        include: { plan: true },
-      });
-
+      const { plan } = await this.client.activities.createGuild(guild, user);
       const planFeatures = (plan?.features ?? {}) as unknown as PlanFeatures;
 
       await interaction.editReply({

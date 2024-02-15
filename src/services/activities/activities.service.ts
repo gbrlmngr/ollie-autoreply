@@ -1,10 +1,12 @@
 import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
+import { Guild, User } from 'discord.js';
 
 import { PrismaClient, RedisClient } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
+import { GuildSettings, PlanIDs } from '../../shared.interfaces';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
@@ -90,5 +92,49 @@ export class ActivitiesService {
     );
 
     return value;
+  }
+
+  public async createGuild(guild: Guild, initiator: User) {
+    performance.mark(`${ActivitiesService.name}.createGuild():start`);
+
+    const result = await this.prisma.guild
+      .create({
+        data: {
+          id: guild.id,
+          ownerId: guild.ownerId,
+          planId: PlanIDs.Free,
+          subscriptionId: null,
+          settings: {} as GuildSettings,
+          registeredBy: initiator.id,
+          registeredAt: new Date(),
+        },
+        include: { plan: true },
+      })
+      .catch(async (error) => {
+        /* Reference: https://www.prisma.io/docs/orm/reference/error-reference#p2002 */
+        if (error?.code !== 'P2002') {
+          this.logger.debug(
+            `🔴 Unable to create a new guild for Guild "${guild.id}".`
+          );
+          this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
+          this.logger.debug(
+            `└─ Deleting cache for "${getGuildQueryIdentityKey(guild.id)}"`
+          );
+          await this.cache.del(getGuildQueryIdentityKey(guild.id));
+        }
+
+        throw error;
+      });
+
+    await this.cache.set(getGuildQueryIdentityKey(guild.id), result);
+
+    performance.mark(`${ActivitiesService.name}.createGuild():end`);
+    performance.measure(
+      `${ActivitiesService.name}.createGuild()`,
+      `${ActivitiesService.name}.createGuild():start`,
+      `${ActivitiesService.name}.createGuild():end`
+    );
+
+    return result;
   }
 }

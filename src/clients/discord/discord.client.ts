@@ -86,7 +86,7 @@ export class DiscordClient<
           ).catch((error) => {
             this.logger
               .error(`🔴 Unable to import listener "${listenerFile}".`)
-              .error(`🔴 Reason: ${error.message ?? error}`);
+              .error(`└─ Reason: ${error.message ?? error}`);
           })
         ).default;
 
@@ -115,7 +115,7 @@ export class DiscordClient<
                 .error(
                   `🔴 Unable to run listener "${listener.name}" for event "${listener.eventName}".`
                 )
-                .error(`🔴 Reason: ${error.message ?? error}`);
+                .error(`└─ Reason: ${error.message ?? error}`);
             }
           }
         );
@@ -123,7 +123,7 @@ export class DiscordClient<
     } catch (error) {
       this.logger
         .error('🔴 Unable to load or run the listeners.')
-        .error(`🔴 Reason: ${error.message ?? error}`);
+        .error(`└─ Reason: ${error.message ?? error}`);
     }
   }
 
@@ -149,7 +149,7 @@ export class DiscordClient<
           ).catch((error) => {
             this.logger
               .error(`🔴 Unable to import command "${commandFile}"`)
-              .error(`🔴 Reason: ${error.message ?? error}`);
+              .error(`└─ Reason: ${error.message ?? error}`);
           })
         ).default;
 
@@ -175,7 +175,7 @@ export class DiscordClient<
 
       this.logger
         .error('🔴 Unable to register the commands.')
-        .error(`🔴 Reason: ${error.message ?? error}`);
+        .error(`└─ Reason: ${error.message ?? error}`);
     }
   }
 }
