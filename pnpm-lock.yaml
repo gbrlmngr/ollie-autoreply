@@ -14,6 +14,9 @@ dependencies:
   cache-manager:
     specifier: ^5.4.0
     version: 5.4.0
+  crc:
+    specifier: ^4.3.2
+    version: 4.3.2
   date-fns:
     specifier: ^3.3.1
     version: 3.3.1
@@ -4420,6 +4423,19 @@ packages:
       path-type: 4.0.0
       yaml: 1.10.2
     dev: true
+
+  /crc@4.3.2:
+    resolution:
+      {
+        integrity: sha512-uGDHf4KLLh2zsHa8D8hIQ1H/HtFQhyHrc0uhHBcoKGol/Xnb+MPYfUMw7cvON6ze/GUESTudKayDcJC5HnJv1A==,
+      }
+    engines: { node: '>=12' }
+    peerDependencies:
+      buffer: '>=6.0.3'
+    peerDependenciesMeta:
+      buffer:
+        optional: true
+    dev: false
 
   /create-require@1.1.1:
     resolution:

@@ -2,6 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 import { Guild, User } from 'discord.js';
+import { crc32 } from 'crc';
 
 import {
   BotNotConfiguredException,
@@ -20,6 +21,7 @@ import {
   getGuildQueryIdentityKey,
   getGuildInboxesIdentityKey,
   getGuildMemberInboxIdentityKey,
+  getMentionableAbsencesIdentityKey,
 } from './activities.interfaces';
 
 @injectable()
@@ -56,7 +58,7 @@ export class ActivitiesService {
           include: { plan: true },
         });
       },
-      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
     performance.mark(`${ActivitiesService.name}.getGuild():end`);
@@ -81,15 +83,17 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" absences from the database...`
         );
-        return this.redis.scan(
-          0,
-          'MATCH',
-          `${getGuildAbsencesIdentityKey(guildId)}/*`,
-          'COUNT',
-          50
-        );
+        return (
+          await this.redis.scan(
+            0,
+            'MATCH',
+            `${getGuildAbsencesIdentityKey(guildId)}/*`,
+            'COUNT',
+            50
+          )
+        )?.[1];
       },
-      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
     performance.mark(`${ActivitiesService.name}.getGuildAbsences():end`);
@@ -114,15 +118,17 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" inboxes from the database...`
         );
-        return this.redis.scan(
-          0,
-          'MATCH',
-          `${getGuildInboxesIdentityKey(guildId)}/*`,
-          'COUNT',
-          1000
-        );
+        return (
+          await this.redis.scan(
+            0,
+            'MATCH',
+            `${getGuildInboxesIdentityKey(guildId)}/*`,
+            'COUNT',
+            1000
+          )
+        )?.[1];
       },
-      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
     performance.mark(`${ActivitiesService.name}.getGuildInboxes():end`);
@@ -130,6 +136,44 @@ export class ActivitiesService {
       `${ActivitiesService.name}.getGuildInboxes()`,
       `${ActivitiesService.name}.getGuildInboxes():start`,
       `${ActivitiesService.name}.getGuildInboxes():end`
+    );
+
+    return value;
+  }
+
+  public async getMentionableAbsences(
+    guildId: string,
+    mentions: string[],
+    cacheTTLSeconds: number = DefaultCacheTTLs.MentionableAbsences
+  ) {
+    performance.mark(
+      `${ActivitiesService.name}.getMentionableAbsences():start`
+    );
+    const mentionsHash = crc32(JSON.stringify(mentions)).toString(16);
+
+    const value = await this.cache.wrap(
+      getMentionableAbsencesIdentityKey(guildId, mentionsHash),
+      async () => {
+        this.logger.debug(
+          `📡 Computing guild "${guildId}" mentionable absences for hash "${mentionsHash}"...`
+        );
+
+        return [
+          Date.now(),
+          new Set<string>([
+            ...(await this.getGuildAbsences(guildId)),
+            ...mentions,
+          ]),
+        ] as const;
+      },
+      NODE_ENV === 'development' ? 30 * 1e3 : cacheTTLSeconds * 1e3
+    );
+
+    performance.mark(`${ActivitiesService.name}.getMentionableAbsences():end`);
+    performance.measure(
+      `${ActivitiesService.name}.getMentionableAbsences()`,
+      `${ActivitiesService.name}.getMentionableAbsences():start`,
+      `${ActivitiesService.name}.getMentionableAbsences():end`
     );
 
     return value;
@@ -227,7 +271,7 @@ export class ActivitiesService {
       throw new BotNotConfiguredException();
     }
 
-    const [{ plan }, [, inboxes]] = await Promise.all([
+    const [{ plan }, inboxes] = await Promise.all([
       this.getGuild(guild.id),
       this.getGuildInboxes(guild.id),
     ]);
