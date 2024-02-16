@@ -1,7 +1,8 @@
-import { Events, Message } from 'discord.js';
+import { EmbedBuilder, Events, Locale, Message, userMention } from 'discord.js';
 
 import { Listener } from './listener.interfaces';
 import { DiscordClient } from '../clients';
+import { EmbedAuthorIconUrl, PrimaryEmbedColor } from '../shared.interfaces';
 
 export default class MessageCreateListener
   implements Listener<Events.MessageCreate>
@@ -23,11 +24,40 @@ export default class MessageCreateListener
         ...mentions.users.keys(),
       ]);
 
+    if (!absences.length) return;
+
     /* If current timestamp is the same as `timestamp`,
       it means this is the first request in the cache window */
     if (Date.now() - timestamp <= 1e3) {
-      console.log('Out of the window!');
-      await message.reply('They are not here.');
+      await message.reply({
+        embeds: [
+          this.createUsersGoneEmbed(
+            Locale.EnglishGB,
+            absences.map((userId) => userMention(userId)).join(' ')
+          ),
+        ],
+        allowedMentions: {
+          users: [],
+          roles: [],
+          repliedUser: true,
+        },
+      });
     }
+  }
+
+  private createUsersGoneEmbed(guildLocale: Locale.EnglishGB, users: string) {
+    return new EmbedBuilder()
+      .setColor(PrimaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setURL('https://ollie.gbrlmngr.dev')
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.users_gone.title'))
+      .setDescription(
+        this.client.i18n.t(guildLocale, 'embeds.users_gone.description', {
+          users,
+        })
+      );
   }
 }

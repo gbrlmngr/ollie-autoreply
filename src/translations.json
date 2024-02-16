@@ -64,6 +64,10 @@
       "inbox_removed": {
         "title": "Welcome back!",
         "description": "Your inbox got utterly destroyed :-)"
+      },
+      "users_gone": {
+        "title": "They are probably away...",
+        "description": "The following users are away and might not reply, right now.\n\n{users}"
       }
     }
   }

@@ -3,6 +3,7 @@ import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 import { Guild, User } from 'discord.js';
 import { crc32 } from 'crc';
+import { intersection } from 'lodash';
 
 import {
   BotNotConfiguredException,
@@ -22,6 +23,7 @@ import {
   getGuildInboxesIdentityKey,
   getGuildMemberInboxIdentityKey,
   getMentionableAbsencesIdentityKey,
+  IdentityPrefixes,
 } from './activities.interfaces';
 
 @injectable()
@@ -158,15 +160,16 @@ export class ActivitiesService {
           `📡 Computing guild "${guildId}" mentionable absences for hash "${mentionsHash}"...`
         );
 
-        return [
-          Date.now(),
-          new Set<string>([
-            ...(await this.getGuildAbsences(guildId)),
-            ...mentions,
-          ]),
-        ] as const;
+        const absences = (await this.getGuildAbsences(guildId))?.map(
+          (absence) =>
+            absence
+              .replace(`${IdentityPrefixes.GuildAbsences}/`, '')
+              .replace(`${guildId}/`, '')
+        );
+
+        return [Date.now(), intersection(absences, mentions)] as const;
       },
-      NODE_ENV === 'development' ? 30 * 1e3 : cacheTTLSeconds * 1e3
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
     performance.mark(`${ActivitiesService.name}.getMentionableAbsences():end`);
@@ -323,8 +326,7 @@ export class ActivitiesService {
         `🔴 Encountered issues when removing absence for user "${user.id}" in guild "${guild.id}".`
       );
       this.logger.debug(
-        `└─ Reason: ${
-          (absenceError || inboxError)?.message ?? (absenceError || inboxError)
+        `└─ Reason: ${(absenceError || inboxError)?.message ?? (absenceError || inboxError)
         }`
       );
     }
