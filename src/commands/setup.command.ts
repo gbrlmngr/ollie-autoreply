@@ -11,7 +11,6 @@ import { DiscordClient, CommandCooldownException } from '../clients';
 import {
   EmbedAuthorIconUrl,
   PlanFeatures,
-  PrimaryEmbedColor,
   SecondaryEmbedColor,
 } from '../shared.interfaces';
 import { NODE_ENV } from '../environment';
@@ -51,26 +50,7 @@ export default class SetupCommand implements Command {
     try {
       await this.limiter.consume(user.id, 1);
 
-      const brbRole = await guild.roles.create({
-        name: this.client.i18n.t(
-          guild.preferredLocale as Locale.EnglishGB,
-          'commands.setup.role.name'
-        ),
-        color: PrimaryEmbedColor,
-        hoist: true,
-        mentionable: false,
-        permissions: [],
-        reason: this.client.i18n.t(
-          guild.preferredLocale as Locale.EnglishGB,
-          'commands.setup.role.reason'
-        ),
-      });
-
-      const { plan } = await this.client.activities.createGuild(
-        guild,
-        user,
-        brbRole.id
-      );
+      const { plan } = await this.client.activities.createGuild(guild, user);
       const planFeatures = (plan?.features ?? {}) as unknown as PlanFeatures;
 
       await interaction.editReply({

@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
-import { Guild, User } from 'discord.js';
+import { Guild, Locale, User } from 'discord.js';
 import { crc32 } from 'crc';
 import { intersection } from 'lodash';
 
@@ -12,7 +12,11 @@ import {
 } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
-import { PlanFeatures, PlanIDs } from '../../shared.interfaces';
+import {
+  PlanFeatures,
+  PlanIDs,
+  PrimaryEmbedColor,
+} from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
 import {
   DefaultCacheCapacity,
@@ -25,6 +29,7 @@ import {
   getMentionableAbsencesIdentityKey,
   IdentityPrefixes,
 } from './activities.interfaces';
+import { I18NService } from '../i18n';
 
 @injectable()
 export class ActivitiesService {
@@ -32,6 +37,7 @@ export class ActivitiesService {
 
   public constructor(
     @inject(DISymbols.LoggingService) private readonly logger: LoggingService,
+    @inject(DISymbols.I18NService) private readonly i18n: I18NService,
     @inject(DISymbols.PrismaClient) private readonly prisma: PrismaClient,
     @inject(DISymbols.RedisClient) private readonly redis: RedisClient
   ) {
@@ -182,27 +188,20 @@ export class ActivitiesService {
     return value;
   }
 
-  public async createGuild(
-    guild: Guild,
-    initiator: User,
-    absenceRoleId: string
-  ) {
+  public async createGuild(guild: Guild, initiator: User) {
     performance.mark(`${ActivitiesService.name}.createGuild():start`);
 
-    const result = await this.prisma.guild
+    const createdGuild = await this.prisma.guild
       .create({
         data: {
           id: guild.id,
           ownerId: guild.ownerId,
           planId: PlanIDs.Free,
           subscriptionId: null,
-          settings: {
-            absenceRoleId,
-          },
+          settings: {},
           registeredBy: initiator.id,
           registeredAt: new Date(),
         },
-        include: { plan: true },
       })
       .catch(async (error) => {
         /* Reference: https://www.prisma.io/docs/orm/reference/error-reference#p2002 */
@@ -211,12 +210,37 @@ export class ActivitiesService {
             `🔴 Encountered issues when creating a guild "${guild.id}".`
           );
           this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
-          this.logger.debug(
-            `└─ Deleting cache for "${getGuildQueryIdentityKey(guild.id)}"`
-          );
-          await this.cache.del(getGuildQueryIdentityKey(guild.id));
         }
 
+        throw error;
+      });
+
+    const absenceRole = await guild.roles.create({
+      name: this.i18n.t(
+        guild.preferredLocale as Locale.EnglishGB,
+        'commands.setup.role.name'
+      ),
+      color: PrimaryEmbedColor,
+      hoist: true,
+      mentionable: false,
+      permissions: [],
+      reason: this.i18n.t(
+        guild.preferredLocale as Locale.EnglishGB,
+        'commands.setup.role.reason'
+      ),
+    });
+
+    const result = await this.prisma.guild
+      .update({
+        data: { settings: { absenceRoleId: absenceRole.id } },
+        where: { id: createdGuild.id },
+        include: { plan: true },
+      })
+      .catch(async (error) => {
+        this.logger.debug(
+          `🔴 Encountered issues when updating the absence role for guild "${guild.id}".`
+        );
+        this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
         throw error;
       });
 
