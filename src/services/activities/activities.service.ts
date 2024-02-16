@@ -254,4 +254,42 @@ export class ActivitiesService {
 
     return Boolean(setResult && expiryResult);
   }
+
+  public async removeAbsence(guild: Guild, user: User) {
+    performance.mark(`${ActivitiesService.name}.removeAbsence():start`);
+
+    const [[absenceError, absenceResult], [inboxError, inboxResult]] =
+      await this.redis
+        .multi()
+        .del(getGuildMemberAbsenceIdentityKey(guild.id, user.id))
+        .del(getGuildMemberInboxIdentityKey(guild.id, user.id))
+        .exec();
+
+    if (absenceError || inboxError) {
+      this.logger.debug(
+        `🔴 Encountered issues when removing absence for user "${user.id}" in guild "${guild.id}".`
+      );
+      this.logger.debug(
+        `└─ Reason: ${
+          (absenceError || inboxError)?.message ?? (absenceError || inboxError)
+        }`
+      );
+    }
+
+    await Promise.all([
+      this.cache.del(getGuildAbsencesIdentityKey(guild.id)),
+      this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
+      this.cache.del(getGuildInboxesIdentityKey(guild.id)),
+      this.cache.del(getGuildMemberInboxIdentityKey(guild.id, user.id)),
+    ]);
+
+    performance.mark(`${ActivitiesService.name}.removeAbsence():end`);
+    performance.measure(
+      `${ActivitiesService.name}.removeAbsence()`,
+      `${ActivitiesService.name}.removeAbsence():start`,
+      `${ActivitiesService.name}.removeAbsence():end`
+    );
+
+    return Boolean(absenceResult && inboxResult);
+  }
 }

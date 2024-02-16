@@ -22,6 +22,7 @@ export enum CommandInstantiationTypes {
 export enum CommandCooldownPointPerSeconds {
   Setup = 60,
   Brb = 30,
+  Back = CommandCooldownPointPerSeconds.Brb,
 }
 
 export class CommandCooldownException extends Error {

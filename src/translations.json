@@ -9,6 +9,9 @@
         "duration_option": {
           "description": "For how long will you be away?"
         }
+      },
+      "back": {
+        "description": "Let the Community know you're back."
       }
     },
     "embeds": {
