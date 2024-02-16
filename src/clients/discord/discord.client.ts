@@ -7,6 +7,8 @@ import {
   GatewayIntentBits,
   type ClientEvents,
   Collection,
+  EmbedBuilder,
+  Locale,
 } from 'discord.js';
 import { EventEmitter } from 'eventemitter3';
 import {
@@ -14,7 +16,12 @@ import {
   type IRateLimiterRedisOptions,
 } from 'rate-limiter-flexible';
 
-import { LoggingService, I18NService, ActivitiesService } from '../../services';
+import {
+  LoggingService,
+  I18NService,
+  ActivitiesService,
+  IdentityPrefixes,
+} from '../../services';
 import { Listener } from '../../listeners';
 import {
   Command,
@@ -23,7 +30,11 @@ import {
   CommandNotAllowedException,
 } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
-import { RedisClient } from '../redis';
+import {
+  EmbedAuthorIconUrl,
+  SecondaryEmbedColor,
+} from '../../shared.interfaces';
+import { RedisClient, RemovedKeyEvent } from '../redis';
 import { PrismaClient } from '../prisma';
 
 decorate(injectable(), Client);
@@ -60,8 +71,13 @@ export class DiscordClient<
     });
 
     this.performanceObserver.observe({ entryTypes: ['measure'] });
+    this.onRedisEvents();
     this.loadListeners();
     this.loadCommands();
+  }
+
+  private async onRedisEvents() {
+    this.ee.on(RemovedKeyEvent, this.onRedisRemovedKeyEvent.bind(this));
   }
 
   private async loadListeners() {
@@ -177,5 +193,48 @@ export class DiscordClient<
         .error('🔴 Unable to register the commands.')
         .error(`└─ Reason: ${error.message ?? error}`);
     }
+  }
+
+  private async onRedisRemovedKeyEvent(message: string) {
+    const [prefix, guildId, userId] = message.split('/');
+
+    switch (prefix) {
+      case IdentityPrefixes.GuildInboxes:
+        this.onInboxRemoved(guildId, userId);
+        return;
+
+      default:
+        return;
+    }
+  }
+
+  private async onInboxRemoved(guildId: string, userId: string) {
+    try {
+      const dmChannel = await (
+        this.users.cache.get(userId) ?? (await this.users.fetch(userId))
+      ).createDM();
+      await dmChannel.send({
+        embeds: [this.createInboxRemovalDirectMessageEmbed(Locale.EnglishGB)],
+      });
+    } catch (error) {
+      this.logger.warn(
+        `🟠 Unable to inform user "${userId}" about their inbox removal for guild "${guildId}".`
+      );
+      this.logger.warn(`└─ Reason: ${error.message ?? error}`);
+    }
+  }
+
+  private createInboxRemovalDirectMessageEmbed(guildLocale: Locale.EnglishGB) {
+    return new EmbedBuilder()
+      .setColor(SecondaryEmbedColor)
+      .setAuthor({
+        name: this.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setURL('https://ollie.gbrlmngr.dev')
+      .setTitle(this.i18n.t(guildLocale, 'embeds.inbox_removed.title'))
+      .setDescription(
+        this.i18n.t(guildLocale, 'embeds.inbox_removed.description')
+      );
   }
 }

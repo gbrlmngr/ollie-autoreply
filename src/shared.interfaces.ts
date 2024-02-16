@@ -12,6 +12,7 @@ export interface PlanFeatures {
 export interface GuildSettings {}
 
 export const AbsenceDurationValuesInSeconds = [
+  10,
   15 * 60,
   30 * 60,
   60 * 60,

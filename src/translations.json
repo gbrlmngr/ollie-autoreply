@@ -45,6 +45,10 @@
           "title": "Missing for a bit",
           "description": "{isInboxCreated, select, true {{user} will be gone for **~{duration}**, but they'll have their inbox open.} other {{user} will be gone for **~{duration}**.}}"
         }
+      },
+      "inbox_removed": {
+        "title": "Welcome back!",
+        "description": "Your inbox got utterly destroyed :-)"
       }
     }
   }
