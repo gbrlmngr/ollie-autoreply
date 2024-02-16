@@ -7,6 +7,7 @@ import { PrismaClient, RedisClient } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
 import { GuildSettings, PlanFeatures, PlanIDs } from '../../shared.interfaces';
+import { NODE_ENV } from '../../environment';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLs,
@@ -51,7 +52,7 @@ export class ActivitiesService {
           include: { plan: true },
         });
       },
-      cacheTTLSeconds
+      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
     );
 
     performance.mark(`${ActivitiesService.name}.getGuild():end`);
@@ -84,7 +85,7 @@ export class ActivitiesService {
           50
         );
       },
-      cacheTTLSeconds
+      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
     );
 
     performance.mark(`${ActivitiesService.name}.getGuildAbsences():end`);
@@ -117,7 +118,7 @@ export class ActivitiesService {
           1000
         );
       },
-      cacheTTLSeconds
+      NODE_ENV === 'development' ? 0 : cacheTTLSeconds
     );
 
     performance.mark(`${ActivitiesService.name}.getGuildInboxes():end`);

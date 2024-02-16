@@ -56,7 +56,7 @@ export default class SetupCommand implements Command {
 
       await interaction.editReply({
         embeds: [
-          this.createSetupCompletedSuccessfulEmbed(
+          this.createSetupCompletedSuccessfullyEmbed(
             Locale.EnglishGB,
             planFeatures.useUnlimitedInboxes
               ? -1
@@ -84,7 +84,7 @@ export default class SetupCommand implements Command {
     }
   }
 
-  private createSetupCompletedSuccessfulEmbed(
+  private createSetupCompletedSuccessfullyEmbed(
     guildLocale: Locale.EnglishGB,
     inboxesQuota: number,
     inboxCapacity: number
@@ -98,14 +98,14 @@ export default class SetupCommand implements Command {
       .setTitle(
         this.client.i18n.t(
           guildLocale,
-          'embeds.setup.completed_successful.title'
+          'embeds.setup.completed_successfully.title'
         )
       )
       .setURL('https://ollie.gbrlmngr.dev')
       .setDescription(
         this.client.i18n.t(
           guildLocale,
-          'embeds.setup.completed_successful.description'
+          'embeds.setup.completed_successfully.description'
         )
       )
       .setFooter({
@@ -119,9 +119,7 @@ export default class SetupCommand implements Command {
           ),
           value: this.client.i18n.t(
             guildLocale,
-            inboxesQuota === -1
-              ? 'embeds.setup.inboxes_quota_field.infinite_value'
-              : 'embeds.setup.inboxes_quota_field.value',
+            'embeds.setup.inboxes_quota_field.value',
             { count: inboxesQuota }
           ),
           inline: true,
@@ -133,9 +131,7 @@ export default class SetupCommand implements Command {
           ),
           value: this.client.i18n.t(
             guildLocale,
-            inboxCapacity === -1
-              ? 'embeds.setup.inbox_capacity_field.infinite_value'
-              : 'embeds.setup.inbox_capacity_field.value',
+            'embeds.setup.inbox_capacity_field.value',
             { count: inboxCapacity }
           ),
           inline: true,

@@ -22,7 +22,7 @@
         "description": "I might've hit a brick wall or something isn't computing properly.\nCould you try this again?\n\nIf it happens again, I might need to call in the manager..."
       },
       "setup": {
-        "completed_successful": {
+        "completed_successfully": {
           "title": "You're set up and ready to go!",
           "description": "The wicked machinery has been enabled for this Community."
         },
@@ -33,20 +33,17 @@
         "upgrade_footer": "Need more? Upgrade your plan on the Dashboard.",
         "inboxes_quota_field": {
           "name": "Available inboxes",
-          "value": "{count, number}",
-          "infinite_value": "∞"
+          "value": "{count, plural, =-1 {∞} other {#}}"
         },
         "inbox_capacity_field": {
           "name": "Capacity per inbox",
-          "value": "{count, plural, =1 {# message} other {# messages}}",
-          "infinite_value": "∞ messages"
+          "value": "{count, plural, =-1 {∞ messages} =1 {# message} other {# messages}}"
         }
       },
       "brb": {
         "user_gone": {
           "title": "Missing for a bit",
-          "description_with_inbox": "{user} will be gone for **~{duration}**, but they'll have their inbox open.",
-          "description_without_inbox": "{user} will be gone for **~{duration}**."
+          "description": "{isInboxCreated, select, true {{user} will be gone for **~{duration}**, but they'll have their inbox open.} other {{user} will be gone for **~{duration}**.}}"
         }
       }
     }

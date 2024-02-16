@@ -93,6 +93,9 @@ export default class BrbCommand implements Command {
           ),
         ],
       });
+    } else {
+      /* Trigger the "Out of service" embed */
+      throw new Error();
     }
   }
 
@@ -111,16 +114,11 @@ export default class BrbCommand implements Command {
       .setTitle(this.client.i18n.t(guildLocale, 'embeds.brb.user_gone.title'))
       .setURL('https://ollie.gbrlmngr.dev')
       .setDescription(
-        this.client.i18n.t(
-          guildLocale,
-          isInboxCreated
-            ? 'embeds.brb.user_gone.description_with_inbox'
-            : 'embeds.brb.user_gone.description_without_inbox',
-          {
-            user: userMention(userId),
-            duration: formatDistanceToNowStrict(Date.now() + duration * 1e3),
-          }
-        )
+        this.client.i18n.t(guildLocale, 'embeds.brb.user_gone.description', {
+          isInboxCreated,
+          user: userMention(userId),
+          duration: formatDistanceToNowStrict(Date.now() + duration * 1e3),
+        })
       );
   }
 }
