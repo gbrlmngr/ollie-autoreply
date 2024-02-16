@@ -27,6 +27,7 @@ import { Command, CommandInstantiationTypes } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
 import {
   EmbedAuthorIconUrl,
+  GuildSettings,
   SecondaryEmbedColor,
 } from '../../shared.interfaces';
 import { RedisClient, RemovedKeyEvent } from '../redis';
@@ -203,12 +204,38 @@ export class DiscordClient<
     const [prefix, guildId, userId] = message.split('/');
 
     switch (prefix) {
+      case IdentityPrefixes.GuildAbsences:
+        this.onAbsenceRemoved(guildId, userId);
+        return;
+
       case IdentityPrefixes.GuildInboxes:
         this.onInboxRemoved(guildId, userId);
         return;
 
       default:
         return;
+    }
+  }
+
+  private async onAbsenceRemoved(guildId: string, userId: string) {
+    try {
+      const { settings } = (await this.activities.getGuild(guildId)) ?? {};
+      const absenceRoleId = (settings as GuildSettings).absenceRoleId ?? null;
+
+      if (absenceRoleId && absenceRoleId !== guildId) {
+        const guild = await this.guilds.fetch(guildId);
+
+        try {
+          await (await guild.members.fetch(userId)).roles.remove(absenceRoleId);
+        } catch {
+          /* eslint-disable-line no-empty */
+        }
+      }
+    } catch (error) {
+      this.logger.warn(
+        `🟠 Unable to inform user "${userId}" about their absence removal for guild "${guildId}".`
+      );
+      this.logger.warn(`└─ Reason: ${error.message ?? error}`);
     }
   }
 

@@ -2,7 +2,11 @@
   "en-GB": {
     "commands": {
       "setup": {
-        "description": "Enable Ollie."
+        "description": "Enable Ollie.",
+        "role": {
+          "name": "Be right back 💤",
+          "reason": "Role created automatically by Ollie."
+        }
       },
       "brb": {
         "description": "Let the Community know you're not around, for some time.",

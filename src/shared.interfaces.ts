@@ -9,7 +9,9 @@ export interface PlanFeatures {
   useUnlimitedInboxCapacity: boolean;
 }
 
-export interface GuildSettings {}
+export interface GuildSettings {
+  absenceRoleId?: string;
+}
 
 export const AbsenceDurationValuesInSeconds = [
   10,

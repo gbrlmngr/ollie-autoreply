@@ -10,7 +10,7 @@ import {
 } from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
-import { GuildSettings, PlanFeatures, PlanIDs } from '../../shared.interfaces';
+import { PlanFeatures, PlanIDs } from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
 import {
   DefaultCacheCapacity,
@@ -135,7 +135,11 @@ export class ActivitiesService {
     return value;
   }
 
-  public async createGuild(guild: Guild, initiator: User) {
+  public async createGuild(
+    guild: Guild,
+    initiator: User,
+    absenceRoleId: string
+  ) {
     performance.mark(`${ActivitiesService.name}.createGuild():start`);
 
     const result = await this.prisma.guild
@@ -145,7 +149,9 @@ export class ActivitiesService {
           ownerId: guild.ownerId,
           planId: PlanIDs.Free,
           subscriptionId: null,
-          settings: {} as GuildSettings,
+          settings: {
+            absenceRoleId,
+          },
           registeredBy: initiator.id,
           registeredAt: new Date(),
         },

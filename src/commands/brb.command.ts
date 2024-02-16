@@ -15,6 +15,7 @@ import { NODE_ENV } from '../environment';
 import {
   AbsenceDurationValuesInSeconds,
   EmbedAuthorIconUrl,
+  GuildSettings,
   PrimaryEmbedColor,
 } from '../shared.interfaces';
 import {
@@ -69,7 +70,7 @@ export default class BrbCommand implements Command {
     await interaction.deferReply();
 
     const duration = Number(options.get('duration', true)?.value);
-    const [isAbsenceCreated, isInboxCreated] = await Promise.all([
+    const [isAbsenceCreated, isInboxCreated, guildDetails] = await Promise.all([
       this.client.activities.createAbsence(
         guild,
         user,
@@ -80,9 +81,21 @@ export default class BrbCommand implements Command {
         user,
         Number.isNaN(duration) ? 0 : duration
       ),
+      this.client.activities.getGuild(guild.id),
     ]);
 
     if (isAbsenceCreated) {
+      const absenceRoleId =
+        (guildDetails?.settings as GuildSettings)?.absenceRoleId || null;
+
+      if (absenceRoleId && absenceRoleId !== guild.id) {
+        try {
+          await (await guild.members.fetch(user)).roles.add(absenceRoleId);
+        } catch {
+          /* eslint-disable-line no-empty */
+        }
+      }
+
       await interaction.editReply({
         embeds: [
           this.createUserGoneEmbed(
