@@ -49,8 +49,12 @@
       },
       "brb": {
         "user_gone": {
-          "title": "Missing for a bit",
+          "title": "Missing for a bit...",
           "description": "{isInboxCreated, select, true {{user} will be gone for **~{duration}**, but they'll have their inbox open.} other {{user} will be gone for **~{duration}**.}}"
+        },
+        "user_back": {
+          "title": "They are back!",
+          "description": "{user} just got back from their endeavours."
         }
       },
       "inbox_removed": {

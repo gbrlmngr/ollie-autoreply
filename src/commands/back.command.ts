@@ -1,8 +1,15 @@
-import { CommandInteraction, Locale, SlashCommandBuilder } from 'discord.js';
+import {
+  CommandInteraction,
+  EmbedBuilder,
+  Locale,
+  SlashCommandBuilder,
+  userMention,
+} from 'discord.js';
 import { RateLimiterAbstract } from 'rate-limiter-flexible';
 
 import { DiscordClient } from '../clients';
 import { NODE_ENV } from '../environment';
+import { EmbedAuthorIconUrl, PrimaryEmbedColor } from '../shared.interfaces';
 import {
   Command,
   CommandCooldownPointPerSeconds,
@@ -33,8 +40,30 @@ export default class BackCommand implements Command {
 
   public async onRun(interaction: CommandInteraction) {
     const { guild, user } = interaction;
-    await interaction.deferReply({ ephemeral: true });
-    await this.client.activities.removeAbsence(guild, user);
-    await interaction.deleteReply();
+    await interaction.deferReply();
+
+    if (await this.client.activities.removeAbsence(guild, user)) {
+      await interaction.editReply({
+        embeds: [this.createUserBackEmbed(Locale.EnglishGB, user.id)],
+      });
+    } else {
+      await interaction.deleteReply();
+    }
+  }
+
+  private createUserBackEmbed(guildLocale: Locale.EnglishGB, userId: string) {
+    return new EmbedBuilder()
+      .setColor(PrimaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setTitle(this.client.i18n.t(guildLocale, 'embeds.brb.user_back.title'))
+      .setURL('https://ollie.gbrlmngr.dev')
+      .setDescription(
+        this.client.i18n.t(guildLocale, 'embeds.brb.user_back.description', {
+          user: userMention(userId),
+        })
+      );
   }
 }
