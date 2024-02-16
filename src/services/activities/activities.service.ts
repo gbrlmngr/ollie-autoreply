@@ -178,24 +178,16 @@ export class ActivitiesService {
   public async createAbsence(guild: Guild, user: User, duration: number) {
     performance.mark(`${ActivitiesService.name}.createAbsence():start`);
 
-    const [[setError, setResult], [expiryError, expiryResult]] =
-      await this.redis
-        .multi()
-        .set(
-          getGuildMemberAbsenceIdentityKey(guild.id, user.id),
-          Date.now().toString()
-        )
-        .expire(getGuildMemberAbsenceIdentityKey(guild.id, user.id), duration)
-        .exec();
+    const setResult = await this.redis.set(
+      getGuildMemberAbsenceIdentityKey(guild.id, user.id),
+      Date.now().toString(),
+      'EX',
+      duration
+    );
 
-    if (setError || expiryError) {
+    if (setResult !== 'OK') {
       this.logger.debug(
-        `🔴 Encountered issues when creating absence for user "${user.id}" in guild "${guild.id}".`
-      );
-      this.logger.debug(
-        `└─ Reason: ${
-          (setError || expiryError)?.message ?? (setError || expiryError)
-        }`
+        `🔴 Unable to create absence for user "${user.id}" in guild "${guild.id}".`
       );
     }
 
@@ -211,7 +203,7 @@ export class ActivitiesService {
       `${ActivitiesService.name}.createAbsence():end`
     );
 
-    return Boolean(setResult && expiryResult);
+    return setResult === 'OK';
   }
 
   public async createInbox(guild: Guild, user: User, duration: number) {
@@ -227,21 +219,16 @@ export class ActivitiesService {
 
     if (!useUnlimitedInboxes && inboxes.length >= inboxesQuota) return false;
 
-    const [[setError, setResult], [expiryError, expiryResult]] =
-      await this.redis
-        .multi()
-        .set(getGuildMemberInboxIdentityKey(guild.id, user.id), '')
-        .expire(getGuildMemberInboxIdentityKey(guild.id, user.id), duration)
-        .exec();
+    const setResult = await this.redis.set(
+      getGuildMemberInboxIdentityKey(guild.id, user.id),
+      '',
+      'EX',
+      duration
+    );
 
-    if (setError || expiryError) {
+    if (setResult !== 'OK') {
       this.logger.debug(
-        `🔴 Encountered issues when creating inbox for user "${user.id}" in guild "${guild.id}".`
-      );
-      this.logger.debug(
-        `└─ Reason: ${
-          (setError || expiryError)?.message ?? (setError || expiryError)
-        }`
+        `🔴 Unable to create inbox for user "${user.id}" in guild "${guild.id}".`
       );
     }
 
@@ -252,7 +239,7 @@ export class ActivitiesService {
       `${ActivitiesService.name}.createInbox():end`
     );
 
-    return Boolean(setResult && expiryResult);
+    return setResult === 'OK';
   }
 
   public async removeAbsence(guild: Guild, user: User) {
