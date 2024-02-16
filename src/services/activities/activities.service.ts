@@ -51,7 +51,7 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" details from the database...`
         );
-        return await this.prisma.guild.findUnique({
+        return this.prisma.guild.findUnique({
           where: { id: guildId },
           include: { plan: true },
         });
@@ -81,7 +81,7 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" absences from the database...`
         );
-        return await this.redis.scan(
+        return this.redis.scan(
           0,
           'MATCH',
           `${getGuildAbsencesIdentityKey(guildId)}/*`,
@@ -114,7 +114,7 @@ export class ActivitiesService {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" inboxes from the database...`
         );
-        return await this.redis.scan(
+        return this.redis.scan(
           0,
           'MATCH',
           `${getGuildInboxesIdentityKey(guildId)}/*`,
