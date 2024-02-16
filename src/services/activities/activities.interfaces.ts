@@ -5,12 +5,12 @@ export enum IdentityPrefixes {
   MentionableAbsences = 'mentions',
 }
 
-export const DefaultCacheTTLs = {
-  MaximumGlobal: 8 * 36e5,
-  GuildQuery: 36e5,
-  GuildAbsences: 6e4,
-  GuildInboxes: 6e4,
-  MentionableAbsences: 3e4,
+export const DefaultCacheTTLsInSeconds = {
+  MaximumGlobal: 8 * 3600,
+  GuildQuery: 3600,
+  GuildAbsences: 600,
+  GuildInboxes: 600,
+  MentionableAbsences: 30,
 } as const;
 
 export const DefaultCacheCapacity = 32e2 as const;

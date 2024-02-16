@@ -16,7 +16,7 @@ import { PlanFeatures, PlanIDs } from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
 import {
   DefaultCacheCapacity,
-  DefaultCacheTTLs,
+  DefaultCacheTTLsInSeconds,
   getGuildMemberAbsenceIdentityKey,
   getGuildAbsencesIdentityKey,
   getGuildQueryIdentityKey,
@@ -37,7 +37,7 @@ export class ActivitiesService {
   ) {
     this.cache = createCache(
       memoryStore({
-        ttl: DefaultCacheTTLs.MaximumGlobal,
+        ttl: DefaultCacheTTLsInSeconds.MaximumGlobal,
         max: DefaultCacheCapacity,
       })
     );
@@ -45,7 +45,7 @@ export class ActivitiesService {
 
   public async getGuild(
     guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLs.GuildQuery
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildQuery
   ) {
     performance.mark(`${ActivitiesService.name}.getGuild():start`);
 
@@ -75,7 +75,7 @@ export class ActivitiesService {
 
   public async getGuildAbsences(
     guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLs.GuildAbsences
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildAbsences
   ) {
     performance.mark(`${ActivitiesService.name}.getGuildAbsences():start`);
 
@@ -110,7 +110,7 @@ export class ActivitiesService {
 
   public async getGuildInboxes(
     guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLs.GuildInboxes
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildInboxes
   ) {
     performance.mark(`${ActivitiesService.name}.getGuildInboxes():start`);
 
@@ -146,7 +146,7 @@ export class ActivitiesService {
   public async getMentionableAbsences(
     guildId: string,
     mentions: string[],
-    cacheTTLSeconds: number = DefaultCacheTTLs.MentionableAbsences
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.MentionableAbsences
   ) {
     performance.mark(
       `${ActivitiesService.name}.getMentionableAbsences():start`
@@ -326,7 +326,8 @@ export class ActivitiesService {
         `🔴 Encountered issues when removing absence for user "${user.id}" in guild "${guild.id}".`
       );
       this.logger.debug(
-        `└─ Reason: ${(absenceError || inboxError)?.message ?? (absenceError || inboxError)
+        `└─ Reason: ${
+          (absenceError || inboxError)?.message ?? (absenceError || inboxError)
         }`
       );
     }
