@@ -7,8 +7,11 @@ import {
 } from 'discord.js';
 import { formatDistanceToNowStrict } from 'date-fns';
 
-import { DiscordClient } from '../clients';
-import { CommandCooldownException } from '../commands';
+import {
+  DiscordClient,
+  CommandCooldownException,
+  BotNotConfiguredException,
+} from '../clients';
 import { EmbedAuthorIconUrl, TernaryEmbedColor } from '../shared.interfaces';
 import { Listener } from './listener.interfaces';
 
@@ -36,10 +39,17 @@ export default class ChatInputInteractionCreate
         `${command.constructor.name}.onRun():end`
       );
     } catch (error) {
+      if (error instanceof BotNotConfiguredException) {
+        await interaction.editReply({
+          embeds: [this.createBotNotConfiguredEmbed(Locale.EnglishGB)],
+        });
+        return;
+      }
+
       if (error instanceof CommandCooldownException) {
         await interaction.editReply({
           embeds: [
-            this.buildCommandCooldownEmbed(Locale.EnglishGB, error.waitMs),
+            this.createCommandCooldownEmbed(Locale.EnglishGB, error.waitMs),
           ],
         });
         return;
@@ -50,18 +60,41 @@ export default class ChatInputInteractionCreate
         .error(`└─ Reason: ${error.message ?? error}`);
 
       await interaction.editReply({
-        embeds: [this.buildUnknownExceptionEmbed(Locale.EnglishGB)],
+        embeds: [this.createUnknownExceptionEmbed(Locale.EnglishGB)],
       });
     }
   }
 
-  private buildCommandCooldownEmbed(guildLocale: Locale.EnglishGB, waitMs = 0) {
+  private createBotNotConfiguredEmbed(guildLocale: Locale.EnglishGB) {
     return new EmbedBuilder()
       .setColor(TernaryEmbedColor)
       .setAuthor({
         name: this.client.i18n.t(guildLocale, 'embeds.author'),
         iconURL: EmbedAuthorIconUrl,
       })
+      .setURL('https://ollie.gbrlmngr.dev')
+      .setTitle(
+        this.client.i18n.t(guildLocale, 'embeds.setup.not_configured.title')
+      )
+      .setDescription(
+        this.client.i18n.t(
+          guildLocale,
+          'embeds.setup.not_configured.description'
+        )
+      );
+  }
+
+  private createCommandCooldownEmbed(
+    guildLocale: Locale.EnglishGB,
+    waitMs = 0
+  ) {
+    return new EmbedBuilder()
+      .setColor(TernaryEmbedColor)
+      .setAuthor({
+        name: this.client.i18n.t(guildLocale, 'embeds.author'),
+        iconURL: EmbedAuthorIconUrl,
+      })
+      .setURL('https://ollie.gbrlmngr.dev')
       .setTitle(this.client.i18n.t(guildLocale, 'embeds.cooldown.title'))
       .setDescription(
         this.client.i18n.t(guildLocale, 'embeds.cooldown.description', {
@@ -70,13 +103,14 @@ export default class ChatInputInteractionCreate
       );
   }
 
-  private buildUnknownExceptionEmbed(guildLocale: Locale.EnglishGB) {
+  private createUnknownExceptionEmbed(guildLocale: Locale.EnglishGB) {
     return new EmbedBuilder()
       .setColor(TernaryEmbedColor)
       .setAuthor({
         name: this.client.i18n.t(guildLocale, 'embeds.author'),
         iconURL: EmbedAuthorIconUrl,
       })
+      .setURL('https://ollie.gbrlmngr.dev')
       .setTitle(
         this.client.i18n.t(guildLocale, 'embeds.unknown_exception.title')
       )

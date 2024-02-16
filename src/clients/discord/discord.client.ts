@@ -23,12 +23,7 @@ import {
   IdentityPrefixes,
 } from '../../services';
 import { Listener } from '../../listeners';
-import {
-  Command,
-  CommandCooldownException,
-  CommandInstantiationTypes,
-  CommandNotAllowedException,
-} from '../../commands';
+import { Command, CommandInstantiationTypes } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
 import {
   EmbedAuthorIconUrl,
@@ -36,6 +31,11 @@ import {
 } from '../../shared.interfaces';
 import { RedisClient, RemovedKeyEvent } from '../redis';
 import { PrismaClient } from '../prisma';
+import {
+  BotNotConfiguredException,
+  CommandCooldownException,
+  CommandNotAllowedException,
+} from './discord.exceptions';
 
 decorate(injectable(), Client);
 
@@ -181,6 +181,10 @@ export class DiscordClient<
         this.commands.set(command.definition.name, command);
       }
     } catch (error) {
+      if (error instanceof BotNotConfiguredException) {
+        return;
+      }
+
       if (error instanceof CommandCooldownException) {
         return;
       }

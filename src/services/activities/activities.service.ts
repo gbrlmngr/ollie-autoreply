@@ -3,7 +3,11 @@ import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 import { Guild, User } from 'discord.js';
 
-import { PrismaClient, RedisClient } from '../../clients';
+import {
+  BotNotConfiguredException,
+  PrismaClient,
+  RedisClient,
+} from '../../clients';
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
 import { GuildSettings, PlanFeatures, PlanIDs } from '../../shared.interfaces';
@@ -178,6 +182,10 @@ export class ActivitiesService {
   public async createAbsence(guild: Guild, user: User, duration: number) {
     performance.mark(`${ActivitiesService.name}.createAbsence():start`);
 
+    if (!(await this.getGuild(guild.id))) {
+      throw new BotNotConfiguredException();
+    }
+
     const setResult = await this.redis.set(
       getGuildMemberAbsenceIdentityKey(guild.id, user.id),
       Date.now().toString(),
@@ -208,6 +216,10 @@ export class ActivitiesService {
 
   public async createInbox(guild: Guild, user: User, duration: number) {
     performance.mark(`${ActivitiesService.name}.createInbox():start`);
+
+    if (!(await this.getGuild(guild.id))) {
+      throw new BotNotConfiguredException();
+    }
 
     const [{ plan }, [, inboxes]] = await Promise.all([
       this.getGuild(guild.id),
@@ -244,6 +256,10 @@ export class ActivitiesService {
 
   public async removeAbsence(guild: Guild, user: User) {
     performance.mark(`${ActivitiesService.name}.removeAbsence():start`);
+
+    if (!(await this.getGuild(guild.id))) {
+      throw new BotNotConfiguredException();
+    }
 
     const [[absenceError, absenceResult], [inboxError, inboxResult]] =
       await this.redis

@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { DiscordClient } from '../clients';
+import { DiscordClient, CommandCooldownException } from '../clients';
 import {
   EmbedAuthorIconUrl,
   PlanFeatures,
@@ -16,7 +16,6 @@ import {
 import { NODE_ENV } from '../environment';
 import {
   Command,
-  CommandCooldownException,
   CommandCooldownPointPerSeconds,
   CommandInstantiationTypes,
 } from './command.interfaces';

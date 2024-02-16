@@ -33,6 +33,10 @@
           "title": "You're already set!",
           "description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else."
         },
+        "not_configured": {
+          "title": "I'm not configured, yet",
+          "description": "Looks like I have not yet been enabled for this Community."
+        },
         "upgrade_footer": "Need more? Upgrade your plan on the Dashboard.",
         "inboxes_quota_field": {
           "name": "Available inboxes",
