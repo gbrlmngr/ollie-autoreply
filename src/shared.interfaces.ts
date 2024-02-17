@@ -1,16 +1,12 @@
-export const PlanIDs = {
-  Free: 'PLAN_FREE',
-} as const;
-
-export interface PlanFeatures {
+export interface GuildFeatures {
   inboxesQuota: number;
   useUnlimitedInboxes: boolean;
   inboxCapacity: number;
   useUnlimitedInboxCapacity: boolean;
 }
 
-export interface GuildSettings {
-  absenceRoleId?: string;
+export interface GuildMetadata {
+  absenceRoleId: string;
 }
 
 export const AbsenceDurationValuesInSeconds = [

@@ -62,8 +62,5 @@
   },
   "type": "commonjs",
   "main": "./dist/src/main.js",
-  "typings": "./dist/src/main.d.ts",
-  "prisma": {
-    "seed": "ts-node prisma/seeds"
-  }
+  "typings": "./dist/src/main.d.ts"
 }

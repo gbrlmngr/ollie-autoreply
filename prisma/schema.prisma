@@ -12,22 +12,14 @@ datasource db {
 
 model Guild {
   id             String   @id @unique
-  plan           Plan     @relation(fields: [planId], references: [id])
-  planId         String   @map("plan_id")
-  subscriptionId String?  @map("subscription_id")
+  subscriptionId String?  @unique @map("subscription_id")
   ownerId        String   @map("owner_id")
-  settings       Json?    @default("{}")
+  metadata       Json?    @default("{}")
+  features       Json?    @default("{}")
   registeredBy   String   @map("registered_by")
   registeredAt   DateTime @default(now()) @map("registered_at")
 
+  @@index([subscriptionId])
+  @@index([ownerId])
   @@map("guilds")
-}
-
-model Plan {
-  id       String  @id @unique
-  name     String
-  features Json?   @default("{}")
-  guild    Guild[]
-
-  @@map("plans")
 }

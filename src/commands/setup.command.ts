@@ -8,11 +8,7 @@ import {
 import { RateLimiterAbstract, RateLimiterRes } from 'rate-limiter-flexible';
 
 import { DiscordClient, CommandCooldownException } from '../clients';
-import {
-  EmbedAuthorIconUrl,
-  PlanFeatures,
-  SecondaryEmbedColor,
-} from '../shared.interfaces';
+import { EmbedAuthorIconUrl, SecondaryEmbedColor } from '../shared.interfaces';
 import { NODE_ENV } from '../environment';
 import {
   Command,
@@ -50,19 +46,23 @@ export default class SetupCommand implements Command {
     try {
       await this.limiter.consume(user.id, 1);
 
-      const { plan } = await this.client.activities.createGuild(guild, user);
-      const planFeatures = (plan?.features ?? {}) as unknown as PlanFeatures;
+      const { features } = await this.client.activities.createGuild(
+        guild,
+        user
+      );
+      const {
+        useUnlimitedInboxes = false,
+        useUnlimitedInboxCapacity = false,
+        inboxesQuota = 0,
+        inboxCapacity = 0,
+      } = features ?? {};
 
       await interaction.editReply({
         embeds: [
           this.createSetupCompletedSuccessfullyEmbed(
             Locale.EnglishGB,
-            planFeatures.useUnlimitedInboxes
-              ? -1
-              : planFeatures.inboxesQuota ?? 0,
-            planFeatures.useUnlimitedInboxCapacity
-              ? -1
-              : planFeatures.inboxCapacity ?? 0
+            useUnlimitedInboxes ? -1 : inboxesQuota ?? 0,
+            useUnlimitedInboxCapacity ? -1 : inboxCapacity ?? 0
           ),
         ],
       });

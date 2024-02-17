@@ -27,7 +27,6 @@ import { Command, CommandInstantiationTypes } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
 import {
   EmbedAuthorIconUrl,
-  GuildSettings,
   SecondaryEmbedColor,
 } from '../../shared.interfaces';
 import { RedisClient, RemovedKeyEvent } from '../redis';
@@ -204,11 +203,11 @@ export class DiscordClient<
     const [prefix, guildId, userId] = message.split('/');
 
     switch (prefix) {
-      case IdentityPrefixes.GuildAbsences:
+      case IdentityPrefixes.Absences:
         this.onAbsenceRemoved(guildId, userId);
         return;
 
-      case IdentityPrefixes.GuildInboxes:
+      case IdentityPrefixes.Inboxes:
         this.onInboxRemoved(guildId, userId);
         return;
 
@@ -219,8 +218,8 @@ export class DiscordClient<
 
   private async onAbsenceRemoved(guildId: string, userId: string) {
     try {
-      const { settings } = (await this.activities.getGuild(guildId)) ?? {};
-      const absenceRoleId = (settings as GuildSettings).absenceRoleId ?? null;
+      const { metadata } = (await this.activities.getGuild(guildId)) ?? {};
+      const absenceRoleId = metadata.absenceRoleId ?? null;
 
       if (absenceRoleId && absenceRoleId !== guildId) {
         const guild = await this.guilds.fetch(guildId);

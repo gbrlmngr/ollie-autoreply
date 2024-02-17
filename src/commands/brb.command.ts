@@ -15,7 +15,6 @@ import { NODE_ENV } from '../environment';
 import {
   AbsenceDurationValuesInSeconds,
   EmbedAuthorIconUrl,
-  GuildSettings,
   PrimaryEmbedColor,
 } from '../shared.interfaces';
 import {
@@ -85,8 +84,7 @@ export default class BrbCommand implements Command {
     ]);
 
     if (isAbsenceCreated) {
-      const absenceRoleId =
-        (guildDetails?.settings as GuildSettings)?.absenceRoleId || null;
+      const absenceRoleId = guildDetails?.metadata?.absenceRoleId ?? null;
 
       if (absenceRoleId && absenceRoleId !== guild.id) {
         try {

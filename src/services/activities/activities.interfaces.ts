@@ -1,15 +1,15 @@
 export enum IdentityPrefixes {
   GuildQuery = 'guilds',
-  GuildAbsences = 'absences',
-  GuildInboxes = 'inboxes',
+  Absences = 'absences',
+  Inboxes = 'inboxes',
   MentionableAbsences = 'mentions',
 }
 
 export const DefaultCacheTTLsInSeconds = {
   MaximumGlobal: 8 * 3600,
   GuildQuery: 3600,
-  GuildAbsences: 600,
-  GuildInboxes: 600,
+  Absences: 600,
+  Inboxes: 600,
   MentionableAbsences: 30,
 } as const;
 
@@ -17,18 +17,18 @@ export const DefaultCacheCapacity = 32e2 as const;
 
 export const getGuildQueryIdentityKey = (guildId: string) =>
   `${IdentityPrefixes.GuildQuery}/${guildId}`;
-export const getGuildAbsencesIdentityKey = (guildId: string) =>
-  `${IdentityPrefixes.GuildAbsences}/${guildId}`;
+export const getAbsencesIdentityKey = (guildId: string) =>
+  `${IdentityPrefixes.Absences}/${guildId}`;
 export const getGuildMemberAbsenceIdentityKey = (
   guildId: string,
   userId: string
-) => `${IdentityPrefixes.GuildAbsences}/${guildId}/${userId}`;
-export const getGuildInboxesIdentityKey = (guildId: string) =>
-  `${IdentityPrefixes.GuildInboxes}/${guildId}`;
+) => `${IdentityPrefixes.Absences}/${guildId}/${userId}`;
+export const getInboxesIdentityKey = (guildId: string) =>
+  `${IdentityPrefixes.Inboxes}/${guildId}`;
 export const getGuildMemberInboxIdentityKey = (
   guildId: string,
   userId: string
-) => `${IdentityPrefixes.GuildInboxes}/${guildId}/${userId}`;
+) => `${IdentityPrefixes.Inboxes}/${guildId}/${userId}`;
 export const getMentionableAbsencesIdentityKey = (
   guildId: string,
   hash: string

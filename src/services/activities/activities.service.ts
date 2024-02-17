@@ -2,8 +2,10 @@ import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 import { Guild, Locale, User } from 'discord.js';
+import { Guild as PrismaGuild } from '@prisma/client';
 import { crc32 } from 'crc';
 import { intersection } from 'lodash';
+import { Merge } from 'type-fest';
 
 import {
   BotNotConfiguredException,
@@ -13,8 +15,8 @@ import {
 import { LoggingService } from '../logging';
 import { DISymbols } from '../../di.interfaces';
 import {
-  PlanFeatures,
-  PlanIDs,
+  GuildFeatures,
+  GuildMetadata,
   PrimaryEmbedColor,
 } from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
@@ -22,9 +24,9 @@ import {
   DefaultCacheCapacity,
   DefaultCacheTTLsInSeconds,
   getGuildMemberAbsenceIdentityKey,
-  getGuildAbsencesIdentityKey,
+  getAbsencesIdentityKey,
   getGuildQueryIdentityKey,
-  getGuildInboxesIdentityKey,
+  getInboxesIdentityKey,
   getGuildMemberInboxIdentityKey,
   getMentionableAbsencesIdentityKey,
   IdentityPrefixes,
@@ -63,7 +65,6 @@ export class ActivitiesService {
         );
         return this.prisma.guild.findUnique({
           where: { id: guildId },
-          include: { plan: true },
         });
       },
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
@@ -76,17 +77,20 @@ export class ActivitiesService {
       `${ActivitiesService.name}.getGuild():end`
     );
 
-    return value;
+    return value as Merge<
+      PrismaGuild,
+      { features: GuildFeatures; metadata: GuildMetadata }
+    >;
   }
 
-  public async getGuildAbsences(
+  public async getAbsences(
     guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildAbsences
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.Absences
   ) {
-    performance.mark(`${ActivitiesService.name}.getGuildAbsences():start`);
+    performance.mark(`${ActivitiesService.name}.getAbsences():start`);
 
     const value = await this.cache.wrap(
-      getGuildAbsencesIdentityKey(guildId),
+      getAbsencesIdentityKey(guildId),
       async () => {
         this.logger.debug(
           `📡 Fetching guild "${guildId}" absences from the database...`
@@ -95,42 +99,7 @@ export class ActivitiesService {
           await this.redis.scan(
             0,
             'MATCH',
-            `${getGuildAbsencesIdentityKey(guildId)}/*`,
-            'COUNT',
-            50
-          )
-        )?.[1];
-      },
-      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
-    );
-
-    performance.mark(`${ActivitiesService.name}.getGuildAbsences():end`);
-    performance.measure(
-      `${ActivitiesService.name}.getGuildAbsences()`,
-      `${ActivitiesService.name}.getGuildAbsences():start`,
-      `${ActivitiesService.name}.getGuildAbsences():end`
-    );
-
-    return value;
-  }
-
-  public async getGuildInboxes(
-    guildId: string,
-    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildInboxes
-  ) {
-    performance.mark(`${ActivitiesService.name}.getGuildInboxes():start`);
-
-    const value = await this.cache.wrap(
-      getGuildInboxesIdentityKey(guildId),
-      async () => {
-        this.logger.debug(
-          `📡 Fetching guild "${guildId}" inboxes from the database...`
-        );
-        return (
-          await this.redis.scan(
-            0,
-            'MATCH',
-            `${getGuildInboxesIdentityKey(guildId)}/*`,
+            `${getAbsencesIdentityKey(guildId)}/*`,
             'COUNT',
             1000
           )
@@ -139,11 +108,46 @@ export class ActivitiesService {
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
-    performance.mark(`${ActivitiesService.name}.getGuildInboxes():end`);
+    performance.mark(`${ActivitiesService.name}.getAbsences():end`);
     performance.measure(
-      `${ActivitiesService.name}.getGuildInboxes()`,
-      `${ActivitiesService.name}.getGuildInboxes():start`,
-      `${ActivitiesService.name}.getGuildInboxes():end`
+      `${ActivitiesService.name}.getAbsences()`,
+      `${ActivitiesService.name}.getAbsences():start`,
+      `${ActivitiesService.name}.getAbsences():end`
+    );
+
+    return value;
+  }
+
+  public async getInboxes(
+    guildId: string,
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.Inboxes
+  ) {
+    performance.mark(`${ActivitiesService.name}.getInboxes():start`);
+
+    const value = await this.cache.wrap(
+      getInboxesIdentityKey(guildId),
+      async () => {
+        this.logger.debug(
+          `📡 Fetching guild "${guildId}" inboxes from the database...`
+        );
+        return (
+          await this.redis.scan(
+            0,
+            'MATCH',
+            `${getInboxesIdentityKey(guildId)}/*`,
+            'COUNT',
+            1000
+          )
+        )?.[1];
+      },
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
+    );
+
+    performance.mark(`${ActivitiesService.name}.getInboxes():end`);
+    performance.measure(
+      `${ActivitiesService.name}.getInboxes()`,
+      `${ActivitiesService.name}.getInboxes():start`,
+      `${ActivitiesService.name}.getInboxes():end`
     );
 
     return value;
@@ -166,11 +170,10 @@ export class ActivitiesService {
           `📡 Computing guild "${guildId}" mentionable absences for hash "${mentionsHash}"...`
         );
 
-        const absences = (await this.getGuildAbsences(guildId))?.map(
-          (absence) =>
-            absence
-              .replace(`${IdentityPrefixes.GuildAbsences}/`, '')
-              .replace(`${guildId}/`, '')
+        const absences = (await this.getAbsences(guildId))?.map((absence) =>
+          absence
+            .replace(`${IdentityPrefixes.Absences}/`, '')
+            .replace(`${guildId}/`, '')
         );
 
         return [Date.now(), intersection(absences, mentions)] as const;
@@ -196,9 +199,9 @@ export class ActivitiesService {
         data: {
           id: guild.id,
           ownerId: guild.ownerId,
-          planId: PlanIDs.Free,
           subscriptionId: null,
-          settings: {},
+          metadata: {},
+          features: {},
           registeredBy: initiator.id,
           registeredAt: new Date(),
         },
@@ -232,9 +235,8 @@ export class ActivitiesService {
 
     const result = await this.prisma.guild
       .update({
-        data: { settings: { absenceRoleId: absenceRole.id } },
+        data: { metadata: { absenceRoleId: absenceRole.id } },
         where: { id: createdGuild.id },
-        include: { plan: true },
       })
       .catch(async (error) => {
         this.logger.debug(
@@ -253,7 +255,10 @@ export class ActivitiesService {
       `${ActivitiesService.name}.createGuild():end`
     );
 
-    return result;
+    return result as Merge<
+      PrismaGuild,
+      { features: GuildFeatures; metadata: GuildMetadata }
+    >;
   }
 
   public async createAbsence(guild: Guild, user: User, duration: number) {
@@ -277,7 +282,7 @@ export class ActivitiesService {
     }
 
     await Promise.all([
-      this.cache.del(getGuildAbsencesIdentityKey(guild.id)),
+      this.cache.del(getAbsencesIdentityKey(guild.id)),
       this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
     ]);
 
@@ -298,14 +303,12 @@ export class ActivitiesService {
       throw new BotNotConfiguredException();
     }
 
-    const [{ plan }, inboxes] = await Promise.all([
+    const [{ features }, inboxes] = await Promise.all([
       this.getGuild(guild.id),
-      this.getGuildInboxes(guild.id),
+      this.getInboxes(guild.id),
     ]);
 
-    const { inboxesQuota, useUnlimitedInboxes } = (plan?.features ??
-      {}) as unknown as PlanFeatures;
-
+    const { inboxesQuota = 0, useUnlimitedInboxes = false } = features ?? {};
     if (!useUnlimitedInboxes && inboxes.length >= inboxesQuota) return false;
 
     const setResult = await this.redis.set(
@@ -357,9 +360,9 @@ export class ActivitiesService {
     }
 
     await Promise.all([
-      this.cache.del(getGuildAbsencesIdentityKey(guild.id)),
+      this.cache.del(getAbsencesIdentityKey(guild.id)),
       this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
-      this.cache.del(getGuildInboxesIdentityKey(guild.id)),
+      this.cache.del(getInboxesIdentityKey(guild.id)),
       this.cache.del(getGuildMemberInboxIdentityKey(guild.id, user.id)),
     ]);
 
