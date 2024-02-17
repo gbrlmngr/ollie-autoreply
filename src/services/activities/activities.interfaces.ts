@@ -18,8 +18,8 @@ export const DefaultCacheTTLsInSeconds = {
 export const DefaultCacheCapacity = 32e2 as const;
 
 export const DefaultGuildFeatures: GuildFeatures = {
-  inboxCapacity: 10,
-  inboxesQuota: 5,
+  inboxCapacity: 5,
+  inboxesQuota: 10,
   useUnlimitedInboxCapacity: false,
   useUnlimitedInboxes: false,
 } as const;
