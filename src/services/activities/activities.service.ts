@@ -408,4 +408,33 @@ export class ActivitiesService {
       this.cache.del(getInboxesIdentityKey(guildId)),
     ]);
   }
+
+  public async deleteGuild(guildId: string) {
+    try {
+      const redisCommander = this.redis.multi();
+      const [, guildAssociatedRedisKeys] = await this.redis.scan(
+        0,
+        'MATCH',
+        `*/${guildId}/*`
+      );
+
+      for (const key of guildAssociatedRedisKeys) {
+        this.logger.debug(`Marking Redis key "${key}" for deletion...`);
+        redisCommander.del(key);
+      }
+
+      this.logger.warn(
+        `⚠️  Attempting to delete guild "${guildId}" and all of its associated resources...`
+      );
+      await Promise.all([
+        redisCommander.exec(),
+        this.prisma.guild.delete({ where: { id: guildId } }),
+      ]);
+    } catch (error) {
+      this.logger.debug(
+        `🔴 Encountered issues when removing guild "${guildId}".`
+      );
+      this.logger.debug(`└─ Reason: ${error?.message ?? error}`);
+    }
+  }
 }

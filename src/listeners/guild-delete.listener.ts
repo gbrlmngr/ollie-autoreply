@@ -15,5 +15,6 @@ export default class GuildDeleteListener
   public async onRun(guild: Guild) {
     const { id, name } = guild;
     this.client.logger.info(`😓 Left a guild: "${name}" (${id})`);
+    await this.client.activities.deleteGuild(guild.id);
   }
 }

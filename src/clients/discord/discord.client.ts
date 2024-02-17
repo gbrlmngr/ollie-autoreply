@@ -232,7 +232,9 @@ export class DiscordClient<
       this.logger.warn(
         `🟠 Unable to inform user "${userId}" about their absence removal for guild "${guildId}".`
       );
-      this.logger.warn(`└─ Reason: ${error.message ?? error}`);
+      this.logger.warn(
+        `└─ Reason: ${error.message ?? error} (code: ${error.code})`
+      );
     }
   }
 
@@ -255,7 +257,9 @@ export class DiscordClient<
       this.logger.warn(
         `🟠 Unable to inform user "${userId}" about their inbox removal for guild "${guildId}".`
       );
-      this.logger.warn(`└─ Reason: ${error.message ?? error}`);
+      this.logger.warn(
+        `└─ Reason: ${error.message ?? error} (code: ${error.code})`
+      );
     }
   }
 
