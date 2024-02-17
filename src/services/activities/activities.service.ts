@@ -33,6 +33,7 @@ import {
   IdentityPrefixes,
   DefaultGuildFeatures,
   DefaultGuildMetadata,
+  getGuildMemberInboxExpiryIdentityKey,
 } from './activities.interfaces';
 
 @injectable()
@@ -287,14 +288,20 @@ export class ActivitiesService {
     const { inboxesQuota = 0, useUnlimitedInboxes = false } = features ?? {};
     if (!useUnlimitedInboxes && inboxes.length >= inboxesQuota) return false;
 
-    const [[pushError, pushResult], [expiryError, expiryResult]] =
+    const [, [pushError, pushResult], [expiryError, expiryResult]] =
       await this.redis
         .multi()
+        .ltrim(getGuildMemberInboxExpiryIdentityKey(guild.id, user.id), 0, 0)
         .lpush(
           getGuildMemberInboxIdentityKey(guild.id, user.id),
           JSON.stringify({ type: 'control' } as InboxMessage)
         )
-        .expire(getGuildMemberInboxIdentityKey(guild.id, user.id), duration)
+        .set(
+          getGuildMemberInboxExpiryIdentityKey(guild.id, user.id),
+          '',
+          'EX',
+          duration
+        )
         .exec();
 
     if (pushError || expiryError) {
@@ -308,8 +315,35 @@ export class ActivitiesService {
       );
     }
 
+    await this.cache.del(getInboxesIdentityKey(guild.id));
     await this.cache.del(getGuildMemberInboxIdentityKey(guild.id, user.id));
     return Boolean(pushResult && expiryResult);
+  }
+
+  public async bulkDeliverMessage(
+    guildId: string,
+    receiverIds: string[],
+    message: InboxMessage
+  ) {
+    const { features } = await this.getGuild(guildId);
+    const result = this.redis.multi();
+
+    for (const receiverId of receiverIds) {
+      await this.cache.del(getGuildMemberInboxIdentityKey(guildId, receiverId));
+
+      result
+        .lpushx(
+          getGuildMemberInboxIdentityKey(guildId, receiverId),
+          JSON.stringify(message)
+        )
+        .ltrim(
+          getGuildMemberInboxIdentityKey(guildId, receiverId),
+          0,
+          features?.inboxCapacity ? features.inboxCapacity - 1 : 0
+        );
+    }
+
+    return await result.exec();
   }
 
   public async removeAbsence(guild: Guild, user: User) {
@@ -321,7 +355,7 @@ export class ActivitiesService {
       await this.redis
         .multi()
         .del(getGuildMemberAbsenceIdentityKey(guild.id, user.id))
-        .del(getGuildMemberInboxIdentityKey(guild.id, user.id))
+        .del(getGuildMemberInboxExpiryIdentityKey(guild.id, user.id))
         .exec();
 
     if (absenceError || inboxError) {
@@ -351,30 +385,20 @@ export class ActivitiesService {
     return Boolean(absenceResult && inboxResult);
   }
 
-  public async bulkDeliverMessage(
-    guildId: string,
-    receiverIds: string[],
-    message: InboxMessage
-  ) {
-    const { features } = await this.getGuild(guildId);
-    const result = this.redis.multi();
-
-    for (const receiverId of receiverIds) {
-      await this.cache.del(getGuildMemberInboxIdentityKey(guildId, receiverId));
-
-      result
-        .lpushx(
-          getGuildMemberInboxIdentityKey(guildId, receiverId),
-          JSON.stringify(message)
-        )
-        .ltrim(
-          getGuildMemberInboxIdentityKey(guildId, receiverId),
-          0,
-          features?.inboxCapacity ?? DefaultGuildFeatures.inboxCapacity
-        );
+  public async getAndRemoveInbox(guildId: string, userId: string) {
+    if (!(await this.getGuild(guildId))) {
+      throw new BotNotConfiguredException();
     }
 
-    return await result.exec();
+    const inbox = await this.getInbox(guildId, userId);
+
+    await Promise.all([
+      await this.redis.del(getGuildMemberInboxIdentityKey(guildId, userId)),
+      await this.cache.del(getInboxesIdentityKey(guildId)),
+      await this.cache.del(getGuildMemberInboxIdentityKey(guildId, userId)),
+    ]);
+
+    return inbox as InboxMessage[];
   }
 
   public async purgeGroupCaches(guildId: string) {

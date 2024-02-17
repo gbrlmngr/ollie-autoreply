@@ -4,6 +4,7 @@ export enum IdentityPrefixes {
   GuildQuery = 'guilds',
   Absences = 'absences',
   Inboxes = 'inboxes',
+  InboxesExpirationMarker = 'inboxes-expiry',
   MentionableAbsences = 'mentions',
 }
 
@@ -42,6 +43,10 @@ export const getGuildMemberInboxIdentityKey = (
   guildId: string,
   userId: string
 ) => `${IdentityPrefixes.Inboxes}/${guildId}/${userId}`;
+export const getGuildMemberInboxExpiryIdentityKey = (
+  guildId: string,
+  userId: string
+) => `${IdentityPrefixes.InboxesExpirationMarker}/${guildId}/${userId}`;
 export const getMentionableAbsencesIdentityKey = (
   guildId: string,
   hash: string

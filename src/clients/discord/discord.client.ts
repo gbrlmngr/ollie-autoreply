@@ -27,6 +27,7 @@ import { Command, CommandInstantiationTypes } from '../../commands';
 import { DISymbols } from '../../di.interfaces';
 import {
   EmbedAuthorIconUrl,
+  InboxMessage,
   SecondaryEmbedColor,
 } from '../../shared.interfaces';
 import { timerify } from '../../utilities/timerify';
@@ -204,7 +205,7 @@ export class DiscordClient<
         this.onAbsenceRemoved(guildId, userId);
         return;
 
-      case IdentityPrefixes.Inboxes:
+      case IdentityPrefixes.InboxesExpirationMarker:
         this.onInboxRemoved(guildId, userId);
         return;
 
@@ -237,9 +238,18 @@ export class DiscordClient<
 
   private async onInboxRemoved(guildId: string, userId: string) {
     try {
-      const dmChannel = await (await this.users.fetch(userId)).createDM();
+      const [dmChannel, messages] = await Promise.all([
+        (await this.users.fetch(userId)).createDM(),
+        this.activities.getAndRemoveInbox(guildId, userId),
+      ]);
+
       await dmChannel.send({
-        embeds: [this.createInboxRemovalDirectMessageEmbed(Locale.EnglishGB)],
+        embeds: [
+          this.createInboxRemovalDirectMessageEmbed(
+            Locale.EnglishGB,
+            messages?.filter((message) => message.type === 'message')
+          ),
+        ],
       });
     } catch (error) {
       this.logger.warn(
@@ -249,7 +259,10 @@ export class DiscordClient<
     }
   }
 
-  private createInboxRemovalDirectMessageEmbed(guildLocale: Locale.EnglishGB) {
+  private createInboxRemovalDirectMessageEmbed(
+    guildLocale: Locale.EnglishGB,
+    messages: InboxMessage[]
+  ) {
     return new EmbedBuilder()
       .setColor(SecondaryEmbedColor)
       .setAuthor({
@@ -260,6 +273,13 @@ export class DiscordClient<
       .setTitle(this.i18n.t(guildLocale, 'embeds.inbox_removed.title'))
       .setDescription(
         this.i18n.t(guildLocale, 'embeds.inbox_removed.description')
+      )
+      .addFields(
+        ...(messages ?? []).map((message) => ({
+          name: 'Make me pretty',
+          value: message.content,
+          inline: false,
+        }))
       );
   }
 }
