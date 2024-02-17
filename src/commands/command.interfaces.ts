@@ -19,8 +19,9 @@ export enum CommandInstantiationTypes {
   Script = 'script',
 }
 
-export enum CommandCooldownPointPerSeconds {
-  Setup = 60,
-  Brb = 30,
-  Back = CommandCooldownPointPerSeconds.Brb,
-}
+export const CommandCooldownPointPerSeconds = {
+  Setup: 60,
+  Sync: 60,
+  Brb: 30,
+  Back: 30,
+} as const;

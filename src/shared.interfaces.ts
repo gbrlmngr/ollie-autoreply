@@ -9,6 +9,8 @@ export interface GuildMetadata {
   absenceRoleId: string;
 }
 
+export const LimiterKeyPrefix = 'ollie:limiter';
+
 export const AbsenceDurationValuesInSeconds = [
   10,
   15 * 60,

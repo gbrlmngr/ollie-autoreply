@@ -366,6 +366,12 @@ export class ActivitiesService {
       this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
       this.cache.del(getInboxesIdentityKey(guild.id)),
       this.cache.del(getGuildMemberInboxIdentityKey(guild.id, user.id)),
+      this.cache.del(
+        getMentionableAbsencesIdentityKey(
+          guild.id,
+          crc32(JSON.stringify([user.id])).toString(16)
+        )
+      ),
     ]);
 
     performance.mark(`${ActivitiesService.name}.removeAbsence():end`);
@@ -376,5 +382,13 @@ export class ActivitiesService {
     );
 
     return Boolean(absenceResult && inboxResult);
+  }
+
+  public async purgeGroupCaches(guildId: string) {
+    return await Promise.all([
+      this.cache.del(getGuildQueryIdentityKey(guildId)),
+      this.cache.del(getAbsencesIdentityKey(guildId)),
+      this.cache.del(getInboxesIdentityKey(guildId)),
+    ]);
   }
 }

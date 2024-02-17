@@ -10,6 +10,7 @@ import { LoggingService, I18NService, ActivitiesService } from './services';
 import { DiscordClient, PrismaClient, RedisClient } from './clients';
 import { DISCORD_TOKEN } from './environment';
 import { DISymbols } from './di.interfaces';
+import { LimiterKeyPrefix } from './shared.interfaces';
 
 decorate(injectable(), EventEmitter);
 
@@ -33,7 +34,7 @@ async function main() {
   ).toFactory<RateLimiterRedis>(
     () => (options: IRateLimiterRedisOptions) =>
       new RateLimiterRedis({
-        keyPrefix: 'ollie-limiter',
+        keyPrefix: `${LimiterKeyPrefix}/`,
         ...options,
       })
   );

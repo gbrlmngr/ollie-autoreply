@@ -8,6 +8,9 @@
           "reason": "Role created automatically by Ollie."
         }
       },
+      "sync": {
+        "description": "Synchronize the guild with the back-end."
+      },
       "brb": {
         "description": "Let the Community know you're not around, for some time.",
         "duration_option": {
@@ -68,6 +71,12 @@
       "users_gone": {
         "title": "They are probably away...",
         "description": "The following users are away and might not reply, right now.\n\n{users}"
+      },
+      "sync": {
+        "synced_successfully": {
+          "title": "Synced successfully",
+          "description": "The wicked machinery has been synced."
+        }
       }
     }
   }
