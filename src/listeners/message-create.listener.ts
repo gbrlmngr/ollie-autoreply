@@ -15,7 +15,7 @@ export default class MessageCreateListener
   public constructor(private readonly client: DiscordClient) {}
 
   public async onRun(message: Message<boolean>) {
-    const { author, guild, mentions } = message;
+    const { author, guild, mentions, cleanContent, url } = message;
     if (author.bot) return;
     if (!mentions.users.size) return;
 
@@ -25,6 +25,14 @@ export default class MessageCreateListener
       ]);
 
     if (!absences.length) return;
+
+    await this.client.activities.bulkDeliverMessage(guild.id, absences, {
+      type: 'message',
+      authorId: author.id,
+      sentAt: Date.now(),
+      url,
+      content: cleanContent,
+    });
 
     /* If current timestamp is the same as `timestamp`,
       it means this is the first request in the cache window */

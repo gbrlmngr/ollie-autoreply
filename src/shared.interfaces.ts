@@ -9,6 +9,14 @@ export interface GuildMetadata {
   absenceRoleId: string;
 }
 
+export interface InboxMessage {
+  type: 'control' | 'message';
+  authorId: string;
+  sentAt: number;
+  url: string;
+  content: string;
+}
+
 export const LimiterKeyPrefix = 'ollie:limiter';
 
 export const AbsenceDurationValuesInSeconds = [

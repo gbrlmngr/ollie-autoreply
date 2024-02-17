@@ -68,6 +68,7 @@ export class DiscordClient<
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
       ],
     });
 

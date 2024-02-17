@@ -16,6 +16,7 @@ import { DISymbols } from '../../di.interfaces';
 import {
   GuildFeatures,
   GuildMetadata,
+  InboxMessage,
   PrimaryEmbedColor,
 } from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
@@ -120,6 +121,37 @@ export class ActivitiesService {
             1000
           )
         )?.[1];
+      },
+      NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
+    );
+
+    return value;
+  }
+
+  public async getInbox(
+    guildId: string,
+    userId: string,
+    cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.Inboxes
+  ) {
+    const value = await this.cache.wrap(
+      getGuildMemberInboxIdentityKey(guildId, userId),
+      async () => {
+        this.logger.debug(
+          `📡 Fetching user "${userId}"'s inbox for guild "${guildId}" from the database...`
+        );
+
+        const { features } = await this.getGuild(guildId);
+        const result = await this.redis.lrange(
+          getGuildMemberInboxIdentityKey(guildId, userId),
+          0,
+          features?.inboxCapacity ?? DefaultGuildFeatures.inboxCapacity
+        );
+
+        try {
+          return result?.map((message) => JSON.parse(message));
+        } catch {
+          return [];
+        }
       },
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
@@ -255,20 +287,29 @@ export class ActivitiesService {
     const { inboxesQuota = 0, useUnlimitedInboxes = false } = features ?? {};
     if (!useUnlimitedInboxes && inboxes.length >= inboxesQuota) return false;
 
-    const setResult = await this.redis.set(
-      getGuildMemberInboxIdentityKey(guild.id, user.id),
-      '',
-      'EX',
-      duration
-    );
+    const [[pushError, pushResult], [expiryError, expiryResult]] =
+      await this.redis
+        .multi()
+        .lpush(
+          getGuildMemberInboxIdentityKey(guild.id, user.id),
+          JSON.stringify({ type: 'control' } as InboxMessage)
+        )
+        .expire(getGuildMemberInboxIdentityKey(guild.id, user.id), duration)
+        .exec();
 
-    if (setResult !== 'OK') {
+    if (pushError || expiryError) {
       this.logger.debug(
-        `🔴 Unable to create inbox for user "${user.id}" in guild "${guild.id}".`
+        `🔴 Encountered issues when creating inbox for user "${user.id}" in guild "${guild.id}".`
+      );
+      this.logger.debug(
+        `└─ Reason: ${
+          (pushError || expiryError)?.message ?? (pushError || expiryError)
+        }`
       );
     }
 
-    return setResult === 'OK';
+    await this.cache.del(getGuildMemberInboxIdentityKey(guild.id, user.id));
+    return Boolean(pushResult && expiryResult);
   }
 
   public async removeAbsence(guild: Guild, user: User) {
@@ -308,6 +349,32 @@ export class ActivitiesService {
     ]);
 
     return Boolean(absenceResult && inboxResult);
+  }
+
+  public async bulkDeliverMessage(
+    guildId: string,
+    receiverIds: string[],
+    message: InboxMessage
+  ) {
+    const { features } = await this.getGuild(guildId);
+    const result = this.redis.multi();
+
+    for (const receiverId of receiverIds) {
+      await this.cache.del(getGuildMemberInboxIdentityKey(guildId, receiverId));
+
+      result
+        .lpushx(
+          getGuildMemberInboxIdentityKey(guildId, receiverId),
+          JSON.stringify(message)
+        )
+        .ltrim(
+          getGuildMemberInboxIdentityKey(guildId, receiverId),
+          0,
+          features?.inboxCapacity ?? DefaultGuildFeatures.inboxCapacity
+        );
+    }
+
+    return await result.exec();
   }
 
   public async purgeGroupCaches(guildId: string) {
