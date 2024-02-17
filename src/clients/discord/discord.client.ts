@@ -240,9 +240,7 @@ export class DiscordClient<
 
   private async onInboxRemoved(guildId: string, userId: string) {
     try {
-      const dmChannel = await (
-        this.users.cache.get(userId) ?? (await this.users.fetch(userId))
-      ).createDM();
+      const dmChannel = await (await this.users.fetch(userId)).createDM();
       await dmChannel.send({
         embeds: [this.createInboxRemovalDirectMessageEmbed(Locale.EnglishGB)],
       });

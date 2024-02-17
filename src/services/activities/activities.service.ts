@@ -20,6 +20,7 @@ import {
   PrimaryEmbedColor,
 } from '../../shared.interfaces';
 import { NODE_ENV } from '../../environment';
+import { I18NService } from '../i18n';
 import {
   DefaultCacheCapacity,
   DefaultCacheTTLsInSeconds,
@@ -30,8 +31,9 @@ import {
   getGuildMemberInboxIdentityKey,
   getMentionableAbsencesIdentityKey,
   IdentityPrefixes,
+  DefaultGuildFeatures,
+  DefaultGuildMetadata,
 } from './activities.interfaces';
-import { I18NService } from '../i18n';
 
 @injectable()
 export class ActivitiesService {
@@ -77,7 +79,7 @@ export class ActivitiesService {
       `${ActivitiesService.name}.getGuild():end`
     );
 
-    return value as Merge<
+    return value as unknown as Merge<
       PrismaGuild,
       { features: GuildFeatures; metadata: GuildMetadata }
     >;
@@ -200,8 +202,8 @@ export class ActivitiesService {
           id: guild.id,
           ownerId: guild.ownerId,
           subscriptionId: null,
-          metadata: {},
-          features: {},
+          metadata: DefaultGuildMetadata as object,
+          features: DefaultGuildFeatures as object,
           registeredBy: initiator.id,
           registeredAt: new Date(),
         },
@@ -255,7 +257,7 @@ export class ActivitiesService {
       `${ActivitiesService.name}.createGuild():end`
     );
 
-    return result as Merge<
+    return result as unknown as Merge<
       PrismaGuild,
       { features: GuildFeatures; metadata: GuildMetadata }
     >;
