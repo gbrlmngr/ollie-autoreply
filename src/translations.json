@@ -1,6 +1,15 @@
 {
   "en-GB": {
     "commands": {
+      "back": {
+        "description": "Let the Community know you're back."
+      },
+      "brb": {
+        "description": "Let the Community know you're not around, for some time.",
+        "duration_option": {
+          "description": "For how long will you be away?"
+        }
+      },
       "setup": {
         "description": "Enable Ollie.",
         "role": {
@@ -10,73 +19,64 @@
       },
       "sync": {
         "description": "Synchronize the guild with the back-end."
-      },
-      "brb": {
-        "description": "Let the Community know you're not around, for some time.",
-        "duration_option": {
-          "description": "For how long will you be away?"
-        }
-      },
-      "back": {
-        "description": "Let the Community know you're back."
       }
     },
     "embeds": {
       "author": "Ollie, the Penguin",
-      "cooldown": {
-        "title": "Out of service!",
-        "description": "I might've ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again."
+      "brb": {
+        "user_back": {
+          "description": "{user} just got back from their endeavours.",
+          "title": "They are back!"
+        },
+        "user_gone": {
+          "description": "{isInboxCreated, select, true {{user} will be gone for **~{duration}**, but they'll have their inbox open.} other {{user} will be gone for **~{duration}**.}}",
+          "title": "Missing for a bit..."
+        }
       },
-      "unknown_exception": {
-        "title": "Out of service!",
-        "description": "I might've hit a brick wall or something isn't computing properly.\nCould you try this again?\n\nIf it happens again, I might need to call in the manager..."
+      "cooldown": {
+        "description": "I might've ran out of batteries or slipped over a banana peel.\nLet me recharge for **~{wait}** and then try again.",
+        "title": "Out of service!"
+      },
+      "inbox_removed": {
+        "description": "Your inbox got utterly destroyed :-)",
+        "title": "Welcome back!"
       },
       "setup": {
         "completed_successfully": {
-          "title": "You're set up and ready to go!",
-          "description": "The wicked machinery has been enabled for this Community."
-        },
-        "previously_completed": {
-          "title": "You're already set!",
-          "description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else."
-        },
-        "not_configured": {
-          "title": "I'm not configured, yet",
-          "description": "Looks like I have not yet been enabled for this Community."
-        },
-        "upgrade_footer": "Need more? Upgrade your plan on the Dashboard.",
-        "inboxes_quota_field": {
-          "name": "Available inboxes",
-          "value": "{count, plural, =-1 {∞} other {#}}"
+          "description": "The wicked machinery has been enabled for this Community.",
+          "title": "You're set up and ready to go!"
         },
         "inbox_capacity_field": {
           "name": "Capacity per inbox",
           "value": "{count, plural, =-1 {∞ messages} =1 {# message} other {# messages}}"
-        }
-      },
-      "brb": {
-        "user_gone": {
-          "title": "Missing for a bit...",
-          "description": "{isInboxCreated, select, true {{user} will be gone for **~{duration}**, but they'll have their inbox open.} other {{user} will be gone for **~{duration}**.}}"
         },
-        "user_back": {
-          "title": "They are back!",
-          "description": "{user} just got back from their endeavours."
-        }
-      },
-      "inbox_removed": {
-        "title": "Welcome back!",
-        "description": "Your inbox got utterly destroyed :-)"
-      },
-      "users_gone": {
-        "title": "They are probably away...",
-        "description": "The following users are away and might not reply, right now.\n\n{users}"
+        "inboxes_quota_field": {
+          "name": "Available inboxes",
+          "value": "{count, plural, =-1 {∞} other {#}}"
+        },
+        "not_configured": {
+          "description": "Looks like I have not yet been enabled for this Community.",
+          "title": "I'm not configured, yet"
+        },
+        "previously_completed": {
+          "description": "The wicked machinery has already been enabled for this Community.\nYou don't have to do anything else.",
+          "title": "You're already set!"
+        },
+        "upgrade_footer": "Need more? Upgrade your plan on the Dashboard."
       },
       "sync": {
         "synced_successfully": {
-          "title": "Synced successfully",
-          "description": "The wicked machinery has been synced."
+          "description": "The wicked machinery has been synced.",
+          "title": "Synced successfully"
         }
+      },
+      "unknown_exception": {
+        "description": "I might've hit a brick wall or something isn't computing properly.\nCould you try this again?\n\nIf it happens again, I might need to call in the manager...",
+        "title": "Out of service!"
+      },
+      "users_gone": {
+        "description": "The following users are away and might not reply, right now.\n\n{users}",
+        "title": "They are probably away..."
       }
     }
   }
