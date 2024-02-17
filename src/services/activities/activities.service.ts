@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks';
 import { inject, injectable } from 'inversify';
 import { Cache, createCache, memoryStore } from 'cache-manager';
 import { Guild, Locale, User } from 'discord.js';
@@ -57,8 +56,6 @@ export class ActivitiesService {
     guildId: string,
     cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.GuildQuery
   ) {
-    performance.mark(`${ActivitiesService.name}.getGuild():start`);
-
     const value = await this.cache.wrap(
       getGuildQueryIdentityKey(guildId),
       async () => {
@@ -72,13 +69,6 @@ export class ActivitiesService {
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
-    performance.mark(`${ActivitiesService.name}.getGuild():end`);
-    performance.measure(
-      `${ActivitiesService.name}.getGuild()`,
-      `${ActivitiesService.name}.getGuild():start`,
-      `${ActivitiesService.name}.getGuild():end`
-    );
-
     return value as unknown as Merge<
       PrismaGuild,
       { features: GuildFeatures; metadata: GuildMetadata }
@@ -89,8 +79,6 @@ export class ActivitiesService {
     guildId: string,
     cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.Absences
   ) {
-    performance.mark(`${ActivitiesService.name}.getAbsences():start`);
-
     const value = await this.cache.wrap(
       getAbsencesIdentityKey(guildId),
       async () => {
@@ -110,13 +98,6 @@ export class ActivitiesService {
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
-    performance.mark(`${ActivitiesService.name}.getAbsences():end`);
-    performance.measure(
-      `${ActivitiesService.name}.getAbsences()`,
-      `${ActivitiesService.name}.getAbsences():start`,
-      `${ActivitiesService.name}.getAbsences():end`
-    );
-
     return value;
   }
 
@@ -124,8 +105,6 @@ export class ActivitiesService {
     guildId: string,
     cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.Inboxes
   ) {
-    performance.mark(`${ActivitiesService.name}.getInboxes():start`);
-
     const value = await this.cache.wrap(
       getInboxesIdentityKey(guildId),
       async () => {
@@ -145,13 +124,6 @@ export class ActivitiesService {
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
-    performance.mark(`${ActivitiesService.name}.getInboxes():end`);
-    performance.measure(
-      `${ActivitiesService.name}.getInboxes()`,
-      `${ActivitiesService.name}.getInboxes():start`,
-      `${ActivitiesService.name}.getInboxes():end`
-    );
-
     return value;
   }
 
@@ -160,9 +132,6 @@ export class ActivitiesService {
     mentions: string[],
     cacheTTLSeconds: number = DefaultCacheTTLsInSeconds.MentionableAbsences
   ) {
-    performance.mark(
-      `${ActivitiesService.name}.getMentionableAbsences():start`
-    );
     const mentionsHash = crc32(JSON.stringify(mentions)).toString(16);
 
     const value = await this.cache.wrap(
@@ -183,19 +152,10 @@ export class ActivitiesService {
       NODE_ENV === 'development' ? 1 : cacheTTLSeconds * 1e3
     );
 
-    performance.mark(`${ActivitiesService.name}.getMentionableAbsences():end`);
-    performance.measure(
-      `${ActivitiesService.name}.getMentionableAbsences()`,
-      `${ActivitiesService.name}.getMentionableAbsences():start`,
-      `${ActivitiesService.name}.getMentionableAbsences():end`
-    );
-
     return value;
   }
 
   public async createGuild(guild: Guild, initiator: User) {
-    performance.mark(`${ActivitiesService.name}.createGuild():start`);
-
     const createdGuild = await this.prisma.guild
       .create({
         data: {
@@ -250,13 +210,6 @@ export class ActivitiesService {
 
     await this.cache.set(getGuildQueryIdentityKey(guild.id), result);
 
-    performance.mark(`${ActivitiesService.name}.createGuild():end`);
-    performance.measure(
-      `${ActivitiesService.name}.createGuild()`,
-      `${ActivitiesService.name}.createGuild():start`,
-      `${ActivitiesService.name}.createGuild():end`
-    );
-
     return result as unknown as Merge<
       PrismaGuild,
       { features: GuildFeatures; metadata: GuildMetadata }
@@ -264,8 +217,6 @@ export class ActivitiesService {
   }
 
   public async createAbsence(guild: Guild, user: User, duration: number) {
-    performance.mark(`${ActivitiesService.name}.createAbsence():start`);
-
     if (!(await this.getGuild(guild.id))) {
       throw new BotNotConfiguredException();
     }
@@ -288,19 +239,10 @@ export class ActivitiesService {
       this.cache.del(getGuildMemberAbsenceIdentityKey(guild.id, user.id)),
     ]);
 
-    performance.mark(`${ActivitiesService.name}.createAbsence():end`);
-    performance.measure(
-      `${ActivitiesService.name}.createAbsence()`,
-      `${ActivitiesService.name}.createAbsence():start`,
-      `${ActivitiesService.name}.createAbsence():end`
-    );
-
     return setResult === 'OK';
   }
 
   public async createInbox(guild: Guild, user: User, duration: number) {
-    performance.mark(`${ActivitiesService.name}.createInbox():start`);
-
     if (!(await this.getGuild(guild.id))) {
       throw new BotNotConfiguredException();
     }
@@ -326,19 +268,10 @@ export class ActivitiesService {
       );
     }
 
-    performance.mark(`${ActivitiesService.name}.createInbox():end`);
-    performance.measure(
-      `${ActivitiesService.name}.createInbox()`,
-      `${ActivitiesService.name}.createInbox():start`,
-      `${ActivitiesService.name}.createInbox():end`
-    );
-
     return setResult === 'OK';
   }
 
   public async removeAbsence(guild: Guild, user: User) {
-    performance.mark(`${ActivitiesService.name}.removeAbsence():start`);
-
     if (!(await this.getGuild(guild.id))) {
       throw new BotNotConfiguredException();
     }
@@ -373,13 +306,6 @@ export class ActivitiesService {
         )
       ),
     ]);
-
-    performance.mark(`${ActivitiesService.name}.removeAbsence():end`);
-    performance.measure(
-      `${ActivitiesService.name}.removeAbsence()`,
-      `${ActivitiesService.name}.removeAbsence():start`,
-      `${ActivitiesService.name}.removeAbsence():end`
-    );
 
     return Boolean(absenceResult && inboxResult);
   }

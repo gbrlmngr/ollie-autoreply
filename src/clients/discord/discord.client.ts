@@ -1,4 +1,4 @@
-import { performance, PerformanceObserver } from 'node:perf_hooks';
+import { PerformanceObserver } from 'node:perf_hooks';
 import { resolve } from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { inject, injectable, decorate } from 'inversify';
@@ -29,6 +29,7 @@ import {
   EmbedAuthorIconUrl,
   SecondaryEmbedColor,
 } from '../../shared.interfaces';
+import { timerify } from '../../utilities/timerify';
 import { RedisClient, RemovedKeyEvent } from '../redis';
 import { PrismaClient } from '../prisma';
 import {
@@ -118,13 +119,8 @@ export class DiscordClient<
           listener.eventName,
           async (...args) => {
             try {
-              performance.mark(`${listener.name}.onRun():start`);
-              await listener.onRun(...args);
-              performance.mark(`${listener.name}.onRun():end`);
-              performance.measure(
-                `${listener.name}.onRun()`,
-                `${listener.name}.onRun():start`,
-                `${listener.name}.onRun():end`
+              await timerify(`${listener.constructor.name}.onRun()`, () =>
+                listener.onRun(...args)
               );
             } catch (error) {
               this.logger

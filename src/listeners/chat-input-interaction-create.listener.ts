@@ -13,6 +13,7 @@ import {
   BotNotConfiguredException,
 } from '../clients';
 import { EmbedAuthorIconUrl, TernaryEmbedColor } from '../shared.interfaces';
+import { timerify } from '../utilities/timerify';
 import { Listener } from './listener.interfaces';
 
 export default class ChatInputInteractionCreate
@@ -30,13 +31,8 @@ export default class ChatInputInteractionCreate
     const command = this.client.commands.get(interaction.commandName);
 
     try {
-      performance.mark(`${command.constructor.name}.onRun():start`);
-      await command.onRun(interaction);
-      performance.mark(`${command.constructor.name}.onRun():end`);
-      performance.measure(
-        `${command.constructor.name}.onRun()`,
-        `${command.constructor.name}.onRun():start`,
-        `${command.constructor.name}.onRun():end`
+      await timerify(`${command.constructor.name}.onRun()`, () =>
+        command.onRun(interaction)
       );
     } catch (error) {
       if (error instanceof BotNotConfiguredException) {
