@@ -93,7 +93,7 @@ export class ActivitiesService {
             'MATCH',
             `${getAbsencesIdentityKey(guildId)}/*`,
             'COUNT',
-            1000
+            250
           )
         )?.[1];
       },
@@ -119,7 +119,7 @@ export class ActivitiesService {
             'MATCH',
             `${getInboxesIdentityKey(guildId)}/*`,
             'COUNT',
-            1000
+            250
           )
         )?.[1];
       },
@@ -309,8 +309,7 @@ export class ActivitiesService {
         `🔴 Encountered issues when creating inbox for user "${user.id}" in guild "${guild.id}".`
       );
       this.logger.debug(
-        `└─ Reason: ${
-          (pushError || expiryError)?.message ?? (pushError || expiryError)
+        `└─ Reason: ${(pushError || expiryError)?.message ?? (pushError || expiryError)
         }`
       );
     }
@@ -363,8 +362,7 @@ export class ActivitiesService {
         `🔴 Encountered issues when removing absence for user "${user.id}" in guild "${guild.id}".`
       );
       this.logger.debug(
-        `└─ Reason: ${
-          (absenceError || inboxError)?.message ?? (absenceError || inboxError)
+        `└─ Reason: ${(absenceError || inboxError)?.message ?? (absenceError || inboxError)
         }`
       );
     }
@@ -415,7 +413,9 @@ export class ActivitiesService {
       const [, guildAssociatedRedisKeys] = await this.redis.scan(
         0,
         'MATCH',
-        `*/${guildId}/*`
+        `*/${guildId}/*`,
+        'COUNT',
+        1000
       );
 
       for (const key of guildAssociatedRedisKeys) {
